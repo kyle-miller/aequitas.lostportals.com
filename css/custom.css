@@ -1,0 +1,43 @@
+body {
+    padding: 0;
+    margin: 0;
+}
+
+html,
+body,
+#map {
+	background-color: #454545;
+    height: 100%;
+    font: 10pt "Helvetica Neue", Arial, Helvetica, sans-serif;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#sidebar {
+	opacity: 0.85;
+}
+
+.sidebar-header {
+	border-bottom: 1px solid #8080A0;
+}
+
+.sidebar-tabs,
+.sidebar-header,
+.sidebar-content {
+    background-image: url("../img/backgroundpanel.jpg");
+}
+
+.sidebar-tabs li a > i,
+.sidebar-content {
+    color: white;
+}
+
+.sidebar-tabs > li.active, .sidebar-tabs > ul > li.active {
+	background-color: #8080A0;
+}
+
+.sidebar-tabs li.disabled a > i {
+    color: #454545;
+}
