@@ -47,6 +47,32 @@ body,
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    clear: both;
+    margin-bottom: 3px;
+    height: 1.5em;
+}
+
+.sidebar-layer img {
+    float: left;
+    margin-right: 5px;
+    height: 1.5em;
+}
+
+.sidebar-layer .circle {
+    float: left;
+    margin-right: 7px;
+    border-radius: 50%;
+    height: 1.4em;
+    width: 1.4em;
+    opacity: 0.55;
+}
+
+.sidebar-layer .polygon {
+    float: left;
+    margin-right: 7px;
+    height: 1.4em;
+    width: 1.4em;
+    opacity: 0.55;
 }
 
 .sidebar-layer.active {

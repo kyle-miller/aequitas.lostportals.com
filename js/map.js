@@ -125,7 +125,6 @@ var buildSidebarForLayer = function(configRow) {
     sidebarDiv.attr('id', id);
     sidebarDiv.addClass('sidebar-layer');
     sidebarDiv.addClass('active');
-    sidebarDiv.append(sidebarP);
     sidebarDiv.click(function() {
         var sidebarActive = $('#' + id).hasClass('active');
         if (configRow.marker) {
@@ -160,7 +159,30 @@ var buildSidebarForLayer = function(configRow) {
             sidebarDiv.addClass('active');
         }
     });
-    $("#layer-content").append(sidebarDiv); 
+    $("#layer-content").append(sidebarDiv);
+    var icon = icons.get(configRow.marker);
+    if (icon) {
+        var sidebarImg = $('<img></img>');
+        sidebarImg.attr('src', icon.options.iconUrl);
+        sidebarDiv.append(sidebarImg);
+    }
+    var circleColor = configRow.circle;
+    if (circleColor) {
+        var sidebarCircle = $('<span>&nbsp;</span>');
+        sidebarCircle.attr('class', 'circle');
+        sidebarCircle.attr('style', 'background: ' + circleColor);
+        sidebarDiv.append(sidebarCircle);
+        console.log(sidebarCircle);
+    }
+    var polygonColor = configRow.polygon;
+    if (polygonColor) {
+        var sidebarCircle = $('<span>&nbsp;</span>');
+        sidebarCircle.attr('class', 'polygon');
+        sidebarCircle.attr('style', 'background: ' + polygonColor + '; border: solid ' + polygonColor + '1px');
+        sidebarDiv.append(sidebarCircle);
+        console.log(sidebarCircle);
+    }
+    sidebarDiv.append(sidebarP);
 }
 
 tabletop = Tabletop.init({
