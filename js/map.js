@@ -66,9 +66,9 @@ markers = new Array();
 circles =  new Array();
 polygons =  new Array();
 
-var createMarker = function(sheetName, icon, row) {
+var createMarker = function(sheetId, sheetName, icon, row) {
     var aMarker = L.marker([row.lat, row.lon], {icon: icons.get(icon)});
-    aMarker.type = sheetName;
+    aMarker.type = sheetId;
     var headerText = sheetName.charAt(sheetName.length - 1) == 's' ? sheetName.substring(0, sheetName.length - 1) : sheetName;
     aMarker.bindPopup(row.name);
     $(aMarker).click(function() {
@@ -82,26 +82,28 @@ var createMarker = function(sheetName, icon, row) {
         sidebar.open("info");
     });
     $(aMarker).hover(function(){aMarker.openPopup();}, function(){aMarker.closePopup();});
-    aMarker.addTo(map);
+    map.addLayer(aMarker);
     markers.push(aMarker);
 }
 
-var createCircle = function(color, row) {
+var createCircle = function(sheetId, color, row) {
     var aCircle = L.circle([row.lat, row.lon], 11000, {
         color: color,
         fillColor: color,
         fillOpacity: 0.5
     });
-    aCircle.addTo(map);
+    aCircle.type = sheetId;
+    map.addLayer(aCircle);
     circles.push(aCircle);
 }
 
-var drawPolygon = function(color, row) {
+var drawPolygon = function(sheetId, color, row) {
     var aPolygon = L.polygon(JSON.parse(row.vertices), {color:color});
     aPolygon.bindPopup(row.type);
     $(aPolygon).hover(function(){this.openPopup(polygonPopupLocation(aPolygon._latlngs));}, function(){this.closePopup();});
     $(aPolygon).click(showCoordinates);
-    aPolygon.addTo(map);
+    aPolygon.type = sheetId;
+    map.addLayer(aPolygon);
     polygons.push(aPolygon);
 }
 
@@ -112,32 +114,76 @@ var loadIcons = function(tabletop) {
     }
 }
 
+var buildSidebarForLayer = function(configRow) {
+    var sheetName = configRow.name;
+    var sheetId = configRow.id;
+
+    var sidebarP = $('<p></p>');
+    sidebarP.text(sheetName);
+    var sidebarDiv = $('<div></div>');
+    var id = 'layer-' + sheetId;
+    sidebarDiv.attr('id', id);
+    sidebarDiv.addClass('sidebar-layer');
+    sidebarDiv.addClass('active');
+    sidebarDiv.append(sidebarP);
+    sidebarDiv.click(function() {
+        var sidebarActive = $('#' + id).hasClass('active');
+        if (configRow.marker) {
+            for (var aMarker of markers) {
+                if (aMarker.type == sheetId) {
+                    if (sidebarActive) map.removeLayer(aMarker);
+                    else aMarker.addTo(map);
+                }
+            }
+        }
+        if (configRow.circle) {
+            for (var aCircle of circles) {
+                if (aCircle.type == sheetId) {
+                    if (sidebarActive) map.removeLayer(aCircle);
+                    else aCircle.addTo(map);
+                }
+            }
+        }
+        if (configRow.polygon) {
+            for (var aPolygon of polygons) {
+                if (aPolygon.type == sheetId) {
+                    if (sidebarActive) map.removeLayer(aPolygon);
+                    else aPolygon.addTo(map);
+                }
+            }
+        }
+        if (sidebarActive) {
+            sidebarDiv.removeClass('active');
+            sidebarDiv.addClass('inactive');
+        } else {
+            sidebarDiv.removeClass('inactive');
+            sidebarDiv.addClass('active');
+        }
+    });
+    $("#layer-content").append(sidebarDiv); 
+}
+
 tabletop = Tabletop.init({
     key: code,
     callback: function(data, tabletop) {
         loadIcons(tabletop);
         for (var configRow of tabletop.sheets("Configuration").all()) {
             var sheetName = configRow.name;
+            var sheetId = configRow.id;
             var sheet = tabletop.sheets(sheetName);
             if (!sheet) continue;
+            buildSidebarForLayer(configRow);
             for (var row of sheet.all()) {
                 if (configRow.marker) {
-                    createMarker(sheetName, configRow.marker, row);
+                    createMarker(sheetId, sheetName, configRow.marker, row);
                 }
                 if (configRow.circle) {
-                    createCircle(configRow.circle, row);
+                    createCircle(sheetId, configRow.circle, row);
                 }
                 if (configRow.polygon) {
-                    drawPolygon(configRow.polygon, row);
+                    drawPolygon(sheetId, configRow.polygon, row);
                 }
             }
         }
-        // console.log(markers);
-        // for (var aMarker of markers) {
-        //     console.log(aMarker.type);
-        //     if (aMarker.type != "Fishing") {
-        //         map.removeLayer(aMarker);
-        //     }
-        // }
     }
 });

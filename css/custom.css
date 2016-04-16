@@ -41,3 +41,15 @@ body,
 .sidebar-tabs li.disabled a > i {
     color: #454545;
 }
+
+.sidebar-layer {
+    cursor: pointer;
+}
+
+.sidebar-layer.active {
+    color: white;
+}
+
+.sidebar-layer.inactive {
+    color: gray;
+}
