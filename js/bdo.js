@@ -34,6 +34,21 @@ BDO.map.addLayer(BDO.tileLayer);
 
 BDO.sidebar = L.control.sidebar('sidebar').addTo(BDO.map);
 
+BDO.addMarker = function(marker) {
+	BDO.map.addLayer(marker);
+	BDO.markers.push(marker);
+}
+
+BDO.addCircle = function(circle) {
+	BDO.map.addLayer(circle);
+	BDO.circles.push(circle);
+}
+
+BDO.addPolygon = function(polygon) {
+	BDO.map.addLayer(polygon);
+	BDO.polygons.push(polygon);
+}
+
 /* Consider moving everything below to a new js file */
 
 var hideInfoDivs = function () {
@@ -92,8 +107,7 @@ var createMarker = function(sheetId, sheetName, icon, row) {
         BDO.sidebar.open("info");
     });
     $(aMarker).hover(function(){this.openPopup();}/*, function(){this.closePopup();}*/);
-    BDO.map.addLayer(aMarker);
-    BDO.markers.push(aMarker);
+    BDO.addMarker(aMarker);
 }
 
 var createCircle = function(sheetId, color, row) {
@@ -103,8 +117,7 @@ var createCircle = function(sheetId, color, row) {
         fillOpacity: 0.5
     });
     aCircle.type = sheetId;
-    BDO.map.addLayer(aCircle);
-    BDO.circles.push(aCircle);
+    BDO.addCircle(aCircle);
 }
 
 var drawPolygon = function(sheetId, color, row) {
@@ -113,8 +126,7 @@ var drawPolygon = function(sheetId, color, row) {
     $(aPolygon).hover(function(){this.openPopup(polygonPopupLocation(aPolygon._latlngs));}, function(){this.closePopup();});
     aPolygon.on('click', showCoordinates);
     aPolygon.type = sheetId;
-    BDO.map.addLayer(aPolygon);
-    BDO.polygons.push(aPolygon);
+    BDO.addPolygon(aPolygon);
 }
 
 var loadIcons = function(tabletop) {
