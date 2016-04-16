@@ -78,8 +78,8 @@ var createMarker = function(sheetId, sheetName, icon, row) {
     var headerText = sheetName.charAt(sheetName.length - 1) == 's' ? sheetName.substring(0, sheetName.length - 1) : sheetName;
     var popupHeader = $('<div class="popup-header">' + row.name + '</div>');
     var popupData = $('<div class="popup-data"></div>');
-    if (row.additional) {
-    	var data = row.additional.split(',');
+    if (row.popupNotes) {
+    	var data = row.popupNotes.split(',');
     	if (data) {
     		popupHeader.attr('style', 'border-bottom: 1px solid black; margin-bottom: 5px;');
     		popupData.text(data);
