@@ -69,10 +69,14 @@ body,
 
 .sidebar-layer .polygon {
     float: left;
-    margin-right: 7px;
+    margin: auto 7px auto 3px;
     height: 1.4em;
     width: 1.4em;
     opacity: 0.55;
+}
+
+.sidebar-layer p {
+    padding: 3px 0 1px 0;
 }
 
 .sidebar-layer.active {
