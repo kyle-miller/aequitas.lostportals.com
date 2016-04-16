@@ -23,8 +23,8 @@ var mapBounds = new L.LatLngBounds(BDO.map.unproject([0, 16384], mapMaxZoom), BD
 BDO.map.fitBounds(mapBounds);
 
 BDO.tileLayer = L.tileLayer('http://aequitas.lostportals.com/map/{z}/{x}/{y}.png', {
-    minZoom: 2,
-    maxZoom: 6,
+    minZoom: mapMinZoom,
+    maxZoom: mapMaxZoom,
     attribution: 'Aequitas Black Desert Map',
     tms: true,
     continuousWorld: true,
@@ -34,7 +34,7 @@ BDO.map.addLayer(BDO.tileLayer);
 
 BDO.sidebar = L.control.sidebar('sidebar').addTo(BDO.map);
 
-/* Consider moving everything below to a new class */
+/* Consider moving everything below to a new js file */
 
 var hideInfoDivs = function () {
     $("#info-coordinates").addClass("hidden");
@@ -50,14 +50,6 @@ var showCoordinates = function(e) {
 }
 
 BDO.map.on('click', showCoordinates);
-
-var LeafIcon = L.Icon.extend({
-    options: {
-        iconSize: [47, 37],
-        iconAnchor: [25, 45],
-        popupAnchor: [0, -47]
-    }
-});
 
 var polygonPopupLocation = function(latlngs) {
     var maxLat;
@@ -127,7 +119,7 @@ var drawPolygon = function(sheetId, color, row) {
 
 var loadIcons = function(tabletop) {
     for (var icon of tabletop.sheets("Icons").all()) {
-        BDO.icons.set(icon.icon, new LeafIcon({iconUrl: icon.url}));
+        BDO.icons.set(icon.icon, new BDO.LeafIcon({iconUrl: icon.url}));
     }
 }
 
