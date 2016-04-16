@@ -1,33 +1,44 @@
+BDO = {};
+BDO.map = L.map('map').setView([0, 0], 0);
+BDO.icons = new Map();
+BDO.markers = new Array();
+BDO.circles =  new Array();
+BDO.polygons =  new Array();
+BDO.treeTypes = new Array();
 
-var map = L.map('map').setView([0, 0], 0);
-var code = "1VtxMqver7ocbImx9IdTsTX0KdfAgbRCJcRK-J2w5yv8"
+var googleDocCode = "1VtxMqver7ocbImx9IdTsTX0KdfAgbRCJcRK-J2w5yv8";
+var configTabName = "Configuration";
 
-var mapMinZoom = 0;
+BDO.LeafIcon = L.Icon.extend({
+    options: {
+        iconSize: [47, 37],
+        iconAnchor: [25, 45],
+        popupAnchor: [0, -47]
+    }
+});
+
+var mapMinZoom = 2;
 var mapMaxZoom = 6;
-var mapBounds = new L.LatLngBounds(
-    map.unproject([0, 16384], mapMaxZoom),
-    map.unproject([16384, 8602], mapMaxZoom));
+var mapBounds = new L.LatLngBounds(BDO.map.unproject([0, 16384], mapMaxZoom), BDO.map.unproject([16384, 8602], mapMaxZoom));
+BDO.map.fitBounds(mapBounds);
 
-map.fitBounds(mapBounds);
-
-L.tileLayer('http://aequitas.lostportals.com/map/{z}/{x}/{y}.png', {
+BDO.tileLayer = L.tileLayer('http://aequitas.lostportals.com/map/{z}/{x}/{y}.png', {
     minZoom: 2,
     maxZoom: 6,
     attribution: 'Aequitas Black Desert Map',
     tms: true,
     continuousWorld: true,
     noWarp: true
-}).addTo(map);
+});
+BDO.map.addLayer(BDO.tileLayer);
 
-var sidebar = L.control.sidebar('sidebar').addTo(map);
+BDO.sidebar = L.control.sidebar('sidebar').addTo(BDO.map);
+
+/* Consider moving everything below to a new class */
 
 var hideInfoDivs = function () {
     $("#info-coordinates").addClass("hidden");
     $("#info-node").addClass("hidden");
-}
-
-var showMarker = function(marker) {
-
 }
 
 var showCoordinates = function(e) {
@@ -35,10 +46,10 @@ var showCoordinates = function(e) {
     $("#info .sidebar-header").children().first().text("Coordinates [Lat, Long]");
     $("#info-coordinates .coord-data").html("[" + e.latlng.lat + ", " + e.latlng.lng + "]");
     $("#info-coordinates").removeClass("hidden");
-    sidebar.open("info");
+    BDO.sidebar.open("info");
 }
 
-map.on('click', showCoordinates);
+BDO.map.on('click', showCoordinates);
 
 var LeafIcon = L.Icon.extend({
     options: {
@@ -61,13 +72,8 @@ var polygonPopupLocation = function(latlngs) {
     return new L.LatLng(maxLat, avgLng);
 }
 
-icons = new Map();
-markers = new Array();
-circles =  new Array();
-polygons =  new Array();
-
 var createMarker = function(sheetId, sheetName, icon, row) {
-    var aMarker = L.marker([row.lat, row.lon], {icon: icons.get(icon)});
+    var aMarker = L.marker([row.lat, row.lon], {icon: BDO.icons.get(icon)});
     aMarker.type = sheetId;
     var headerText = sheetName.charAt(sheetName.length - 1) == 's' ? sheetName.substring(0, sheetName.length - 1) : sheetName;
     aMarker.bindPopup(row.name);
@@ -79,11 +85,11 @@ var createMarker = function(sheetId, sheetName, icon, row) {
         $("#info-node .node-coordinates").text("[" + row.lat + ", " + row.lon + "]");
         $("#info-node .node-img").html((!row.screenshot || row.screenshot == "") ? "" : '<a href="' + row.screenshot + '"><img src="' + row.screenshot + '" width="300px"></img></a>');
         $("#info-node").removeClass("hidden");
-        sidebar.open("info");
+        BDO.sidebar.open("info");
     });
-    $(aMarker).hover(function(){aMarker.openPopup();}, function(){aMarker.closePopup();});
-    map.addLayer(aMarker);
-    markers.push(aMarker);
+    $(aMarker).hover(function(){this.openPopup();}, function(){this.closePopup();});
+    BDO.map.addLayer(aMarker);
+    BDO.markers.push(aMarker);
 }
 
 var createCircle = function(sheetId, color, row) {
@@ -93,28 +99,33 @@ var createCircle = function(sheetId, color, row) {
         fillOpacity: 0.5
     });
     aCircle.type = sheetId;
-    map.addLayer(aCircle);
-    circles.push(aCircle);
+    BDO.map.addLayer(aCircle);
+    BDO.circles.push(aCircle);
 }
 
 var drawPolygon = function(sheetId, color, row) {
     var aPolygon = L.polygon(JSON.parse(row.vertices), {color:color});
     aPolygon.bindPopup(row.type);
     $(aPolygon).hover(function(){this.openPopup(polygonPopupLocation(aPolygon._latlngs));}, function(){this.closePopup();});
-    $(aPolygon).click(showCoordinates);
+    aPolygon.on('click', showCoordinates);
     aPolygon.type = sheetId;
-    map.addLayer(aPolygon);
-    polygons.push(aPolygon);
+    BDO.map.addLayer(aPolygon);
+    BDO.polygons.push(aPolygon);
 }
 
 var loadIcons = function(tabletop) {
-    icons = new Map();
     for (var icon of tabletop.sheets("Icons").all()) {
-        icons.set(icon.icon, new LeafIcon({iconUrl: icon.url}));
+        BDO.icons.set(icon.icon, new LeafIcon({iconUrl: icon.url}));
     }
 }
 
-var buildSidebarForLayer = function(configRow) {
+var loadTreeTypes = function(tabletop) {
+    for (var treeType of tabletop.sheets("Tree Types").all()) {
+        BDO.treeTypes.push(treeType);
+    }
+}
+
+var addSidebarFor = function(configRow) {
     var sheetName = configRow.name;
     var sheetId = configRow.id;
 
@@ -128,26 +139,26 @@ var buildSidebarForLayer = function(configRow) {
     sidebarDiv.click(function() {
         var sidebarActive = $('#' + id).hasClass('active');
         if (configRow.marker) {
-            for (var aMarker of markers) {
+            for (var aMarker of BDO.markers) {
                 if (aMarker.type == sheetId) {
-                    if (sidebarActive) map.removeLayer(aMarker);
-                    else aMarker.addTo(map);
+                    if (sidebarActive) BDO.map.removeLayer(aMarker);
+                    else BDO.map.addLayer(aMarker);
                 }
             }
         }
         if (configRow.circle) {
-            for (var aCircle of circles) {
+            for (var aCircle of BDO.circles) {
                 if (aCircle.type == sheetId) {
-                    if (sidebarActive) map.removeLayer(aCircle);
-                    else aCircle.addTo(map);
+                    if (sidebarActive) BDO.map.removeLayer(aCircle);
+                    else BDO.map.addLayer(aCircle);
                 }
             }
         }
         if (configRow.polygon) {
-            for (var aPolygon of polygons) {
+            for (var aPolygon of BDO.polygons) {
                 if (aPolygon.type == sheetId) {
-                    if (sidebarActive) map.removeLayer(aPolygon);
-                    else aPolygon.addTo(map);
+                    if (sidebarActive) BDO.map.removeLayer(aPolygon);
+                    else BDO.map.addLayer(aPolygon);
                 }
             }
         }
@@ -160,7 +171,7 @@ var buildSidebarForLayer = function(configRow) {
         }
     });
     $("#layer-content").append(sidebarDiv);
-    var icon = icons.get(configRow.marker);
+    var icon = BDO.icons.get(configRow.marker);
     if (icon) {
         var sidebarImg = $('<img></img>');
         sidebarImg.attr('src', icon.options.iconUrl);
@@ -172,7 +183,6 @@ var buildSidebarForLayer = function(configRow) {
         sidebarCircle.attr('class', 'circle');
         sidebarCircle.attr('style', 'background: ' + circleColor);
         sidebarDiv.append(sidebarCircle);
-        console.log(sidebarCircle);
     }
     var polygonColor = configRow.polygon;
     if (polygonColor) {
@@ -180,21 +190,21 @@ var buildSidebarForLayer = function(configRow) {
         sidebarCircle.attr('class', 'polygon');
         sidebarCircle.attr('style', 'background: ' + polygonColor + '; border: solid ' + polygonColor + '1px');
         sidebarDiv.append(sidebarCircle);
-        console.log(sidebarCircle);
     }
     sidebarDiv.append(sidebarP);
 }
 
-tabletop = Tabletop.init({
-    key: code,
+BDO.tabletop = Tabletop.init({
+    key: googleDocCode,
     callback: function(data, tabletop) {
         loadIcons(tabletop);
-        for (var configRow of tabletop.sheets("Configuration").all()) {
+        loadTreeTypes(tabletop);
+        for (var configRow of tabletop.sheets(configTabName).all()) {
             var sheetName = configRow.name;
             var sheetId = configRow.id;
             var sheet = tabletop.sheets(sheetName);
             if (!sheet) continue;
-            buildSidebarForLayer(configRow);
+            addSidebarFor(configRow);
             for (var row of sheet.all()) {
                 if (configRow.marker) {
                     createMarker(sheetId, sheetName, configRow.marker, row);
