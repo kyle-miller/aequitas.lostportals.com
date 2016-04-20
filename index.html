@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="bdoApp">
 
 <head>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="css/leaflet.css" />
     <link rel="stylesheet" href="css/leaflet.draw.css" />
     <link rel="stylesheet" href="css/leaflet-sidebar.css" />
     <link rel="stylesheet" href="css/font-awesome.min.css">
     <link rel="stylesheet" href="css/custom.css" />
-    <script src="js/jquery-1.12.3.min.js"></script>
 </head>
 
 <body>
@@ -18,6 +18,7 @@
             <ul role="tablist">
             	<li for="info"><a href="#info" role="tab"><i class="fa fa-info"></i></a></li>
                 <li for="layers"><a href="#layers" role="tab"><i class="fa fa-eye"></i></a></li>
+                <li for="search"><a href="#search" role="tab"><i class="fa fa-search"></i></a></li>
             </ul>
 
             <!-- <ul role="tablist">
@@ -32,9 +33,22 @@
                 <div id="info-coordinates" class="hidden"><p class="coord-data"></p></div>
                 <div id="info-node" class="hidden"><h2 class="node-name"></h2><p class="node-coordinates"></p><p class="node-notes"></p><div class="node-img"></div></div>
             </div>
-             <div class="sidebar-pane" id="layers">
+            <div class="sidebar-pane" id="layers">
                 <h1 class="sidebar-header"><span>Layers</span><span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
                 <div id="layer-content" class="sidebar-layers"></div>
+            </div>
+            <div class="sidebar-pane" id="search" ng-controller="SearchController">
+                <h1 class="sidebar-header">
+                    <span>Search</span>
+                    <input type="search" ng-model="s" id="searchFilter" class="search-query form-control" />
+                    <span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+                </h1>
+                <div id="search-content" class="sidebar-search-results">
+                    <ul class="search-list">
+                        <!-- <li class="search-result" ng-repeat="r in pointsOfInterest | searchFilter:s">{{r.name}}</li> -->
+                        <li class="search-result" ng-repeat="r in pointsOfInterest">{{r.name}}</li>
+                    </ul>
+                </div>
             </div>
             <!-- <div class="sidebar-pane" id="settings">
                 <h1 class="sidebar-header"><span>Settings</span><span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
@@ -43,13 +57,18 @@
     </div>
 
     <div id="map" class="sidebar-map"></div>
+    <script src="js/jquery-1.12.3.min.js"></script>
     <script src="js/leaflet.js"></script>
     <script src="js/tabletop.js"></script>
     <script src="js/Leaflet.LocationShare.js"></script>
     <script src="js/tabletop.js"></script>
     <script src="js/jquery-sidebar.min.js"></script>
     <script src="js/leaflet-sidebar.min.js"></script>
+    <script src="js/angular.min.js"></script>
+    <!-- <script src="js/angular-route.min.js"></script> -->
+    
     <script src="js/bdo.js"></script>
+    <script src="js/controllers.js"></script>
 </body>
 
 </html>

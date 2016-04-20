@@ -2,8 +2,8 @@ BDO = {};
 BDO.map = L.map('map').setView([0, 0], 0);
 BDO.icons = new Map();
 BDO.markers = new Array();
-BDO.circles =  new Array();
-BDO.polygons =  new Array();
+BDO.circles = new Array();
+BDO.polygons = new Array();
 BDO.treeTypes = new Array();
 
 var googleDocCode = "1VtxMqver7ocbImx9IdTsTX0KdfAgbRCJcRK-J2w5yv8";
@@ -35,23 +35,26 @@ BDO.map.addLayer(BDO.tileLayer);
 BDO.sidebar = L.control.sidebar('sidebar').addTo(BDO.map);
 
 BDO.addMarker = function(marker) {
-	BDO.map.addLayer(marker);
-	BDO.markers.push(marker);
+    angular.element('[ng-controller=SearchController]').scope().pointsOfInterest.push(marker);
+    BDO.map.addLayer(marker);
+    BDO.markers.push(marker);
 }
 
 BDO.addCircle = function(circle) {
-	BDO.map.addLayer(circle);
-	BDO.circles.push(circle);
+    angular.element('[ng-controller=SearchController]').scope().pointsOfInterest.push(circle);
+    BDO.map.addLayer(circle);
+    BDO.circles.push(circle);
 }
 
 BDO.addPolygon = function(polygon) {
-	BDO.map.addLayer(polygon);
-	BDO.polygons.push(polygon);
+    angular.element('[ng-controller=SearchController]').scope().pointsOfInterest.push(polygon);
+    BDO.map.addLayer(polygon);
+    BDO.polygons.push(polygon);
 }
 
 /* Consider moving everything below to a new js file */
 
-var hideInfoDivs = function () {
+var hideInfoDivs = function() {
     $("#info-coordinates").addClass("hidden");
     $("#info-node").addClass("hidden");
 }
@@ -80,23 +83,23 @@ var polygonPopupLocation = function(latlngs) {
 }
 
 var createMarker = function(sheetId, sheetName, icon, row) {
-    var aMarker = L.marker([row.lat, row.lon], {icon: BDO.icons.get(icon)});
+    var aMarker = L.marker([row.lat, row.lon], { icon: BDO.icons.get(icon) });
     aMarker.type = sheetId;
     var headerText = sheetName.charAt(sheetName.length - 1) == 's' ? sheetName.substring(0, sheetName.length - 1) : sheetName;
     var popupHeader = $('<div class="popup-header">' + row.name + '</div>');
     var popupData = $('<div class="popup-data"></div>');
     if (row.popupNotes) {
-    	var data = row.popupNotes.split(',');
-    	if (data) {
-    		popupHeader.attr('style', 'border-bottom: 1px solid black; margin-bottom: 5px;');
-    		popupData.text(data);
-		}
+        var data = row.popupNotes.split(',');
+        if (data) {
+            popupHeader.attr('style', 'border-bottom: 1px solid black; margin-bottom: 5px;');
+            popupData.text(data);
+        }
     }
     var popup = $('<div class="popup"></div>');
     popup.append(popupHeader);
     popup.append(popupData);
     aMarker.bindPopup(popup.html());
-    $(aMarker).click(function() {
+    var showInfoForMarker = function() {
         hideInfoDivs();
         $("#info .sidebar-header").children().first().text(headerText);
         $("#info-node .node-name").text(row.name);
@@ -105,8 +108,11 @@ var createMarker = function(sheetId, sheetName, icon, row) {
         $("#info-node .node-img").html((!row.screenshot || row.screenshot == "") ? "" : '<a href="' + row.screenshot + '"><img src="' + row.screenshot + '" width="300px"></img></a>');
         $("#info-node").removeClass("hidden");
         BDO.sidebar.open("info");
-    });
-    $(aMarker).hover(function(){this.openPopup();}/*, function(){this.closePopup();}*/);
+    };
+    $(aMarker).click(showInfoForMarker);
+    $(aMarker).hover(function() { this.openPopup(); } /*, function(){this.closePopup();}*/ );
+    aMarker.name = row.name;
+    aMarker.show = showInfoForMarker;
     BDO.addMarker(aMarker);
 }
 
@@ -117,21 +123,23 @@ var createCircle = function(sheetId, color, row) {
         fillOpacity: 0.5
     });
     aCircle.type = sheetId;
+    aCircle.name = row.name;
     BDO.addCircle(aCircle);
 }
 
 var drawPolygon = function(sheetId, color, row) {
-    var aPolygon = L.polygon(JSON.parse(row.vertices), {color:color});
-    aPolygon.bindPopup(row.type);
-    $(aPolygon).hover(function(){this.openPopup(polygonPopupLocation(aPolygon._latlngs));}, function(){this.closePopup();});
+    var aPolygon = L.polygon(JSON.parse(row.vertices), { color: color });
+    aPolygon.bindPopup(row.name);
+    $(aPolygon).hover(function() { this.openPopup(polygonPopupLocation(aPolygon._latlngs)); }, function() { this.closePopup(); });
     aPolygon.on('click', showCoordinates);
     aPolygon.type = sheetId;
+    aPolygon.name = row.name;
     BDO.addPolygon(aPolygon);
 }
 
 var loadIcons = function(tabletop) {
     for (var icon of tabletop.sheets("Icons").all()) {
-        BDO.icons.set(icon.icon, new BDO.LeafIcon({iconUrl: icon.url}));
+        BDO.icons.set(icon.icon, new BDO.LeafIcon({ iconUrl: icon.url }));
     }
 }
 
