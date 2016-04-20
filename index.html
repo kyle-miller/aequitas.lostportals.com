@@ -46,7 +46,7 @@
                 <div id="search-content" class="sidebar-search-results">
                     <ul class="search-list">
                         <!-- <li class="search-result" ng-repeat="r in pointsOfInterest | searchFilter:s">{{r.name}}</li> -->
-                        <li class="search-result" ng-repeat="r in pointsOfInterest">{{r.name}}</li>
+                        <li class="search-result" ng-repeat="r in pointsOfInterest | filter:{ name: s }">{{r.name}}</li>
                     </ul>
                 </div>
             </div>
