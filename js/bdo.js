@@ -1,6 +1,7 @@
 BDO = {};
 BDO.map = L.map('map').setView([0, 0], 0);
 BDO.icons = new Map();
+BDO.dynamicLayers = new Map();
 BDO.markers = new Array();
 BDO.circles = new Array();
 BDO.polygons = new Array();
@@ -34,22 +35,32 @@ BDO.map.addLayer(BDO.tileLayer);
 
 BDO.sidebar = L.control.sidebar('sidebar').addTo(BDO.map);
 
+var random = function() {
+    return Math.floor(Math.random() * 100000000000000000);
+}
+
 BDO.addMarker = function(marker) {
-    angular.element('[ng-controller=SearchController]').scope().pointsOfInterest.push(marker);
+    // angular.element('[ng-controller=SearchController]').scope().pointsOfInterest.push(marker);
+    marker.id = random();
     BDO.map.addLayer(marker);
     BDO.markers.push(marker);
+    BDO.dynamicLayers.set(marker.id, marker);
 }
 
 BDO.addCircle = function(circle) {
-    angular.element('[ng-controller=SearchController]').scope().pointsOfInterest.push(circle);
+    // angular.element('[ng-controller=SearchController]').scope().pointsOfInterest.push(circle);
+    circle.id = random();
     BDO.map.addLayer(circle);
     BDO.circles.push(circle);
+    BDO.dynamicLayers.set(circle.id, circle);
 }
 
 BDO.addPolygon = function(polygon) {
-    angular.element('[ng-controller=SearchController]').scope().pointsOfInterest.push(polygon);
+    // angular.element('[ng-controller=SearchController]').scope().pointsOfInterest.push(polygon);
+    polygon.id = random();
     BDO.map.addLayer(polygon);
     BDO.polygons.push(polygon);
+    BDO.dynamicLayers.set(polygon.id, polygon);
 }
 
 /* Consider moving everything below to a new js file */
@@ -110,7 +121,7 @@ var createMarker = function(sheetId, sheetName, icon, row) {
         BDO.sidebar.open("info");
     };
     $(aMarker).click(showInfoForMarker);
-    $(aMarker).hover(function() { this.openPopup(); } /*, function(){this.closePopup();}*/ );
+    $(aMarker).hover(function() { this.openPopup(); } , function(){this.closePopup();} );
     aMarker.name = row.name;
     aMarker.show = showInfoForMarker;
     BDO.addMarker(aMarker);
@@ -162,28 +173,11 @@ var addSidebarFor = function(configRow) {
     sidebarDiv.addClass('active');
     sidebarDiv.click(function() {
         var sidebarActive = $('#' + id).hasClass('active');
-        if (configRow.marker) {
-            for (var aMarker of BDO.markers) {
-                if (aMarker.type == sheetId) {
-                    if (sidebarActive) BDO.map.removeLayer(aMarker);
-                    else BDO.map.addLayer(aMarker);
-                }
-            }
-        }
-        if (configRow.circle) {
-            for (var aCircle of BDO.circles) {
-                if (aCircle.type == sheetId) {
-                    if (sidebarActive) BDO.map.removeLayer(aCircle);
-                    else BDO.map.addLayer(aCircle);
-                }
-            }
-        }
-        if (configRow.polygon) {
-            for (var aPolygon of BDO.polygons) {
-                if (aPolygon.type == sheetId) {
-                    if (sidebarActive) BDO.map.removeLayer(aPolygon);
-                    else BDO.map.addLayer(aPolygon);
-                }
+        for (var layerMapObj of BDO.dynamicLayers) {
+            var layer = layerMapObj[1];
+            if (layer.type == sheetId) {
+                if (sidebarActive) BDO.map.removeLayer(layer);
+                else BDO.map.addLayer(layer);
             }
         }
         if (sidebarActive) {
@@ -241,5 +235,6 @@ BDO.tabletop = Tabletop.init({
                 }
             }
         }
+        angular.element('[ng-controller=SearchController]').scope().loadPointsOfInterest();
     }
 });
