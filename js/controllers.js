@@ -77,6 +77,7 @@ var angularApp = angular.module("bdoApp", []);
 	    });
 	    aCircle.type = sheetId;
 	    aCircle.name = row.name;
+	    aCircle.row = row;
 	    BDO.addCircle(aCircle);
 	}
 
@@ -87,6 +88,7 @@ var angularApp = angular.module("bdoApp", []);
 	    aPolygon.on('click', showCoordinates);
 	    aPolygon.type = sheetId;
 	    aPolygon.name = row.name;
+	    aPolygon.row = row;
 	    BDO.addPolygon(aPolygon);
 	}
 
@@ -181,8 +183,18 @@ var angularApp = angular.module("bdoApp", []);
 	    }
 	});
 
-	$scope.toggleSearchResult = function(id) {
+	$scope.toggle = function(id) {
 		$('#' + id).toggle();
+		
+		var caret = $('[for=' + id + '] > span > i')
+		if ($('#' + id).css('display') == 'none') {
+			console.log($('[for=' + id + ']'));
+			caret.removeClass('fa-caret-down');
+			caret.addClass('fa-caret-right');
+		} else {
+			caret.removeClass('fa-caret-right');
+			caret.addClass('fa-caret-down');
+		}
 	}
 
 	$scope.loadPointsOfInterest = function() {

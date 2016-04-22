@@ -46,7 +46,7 @@
                 <div id="search-content" class="sidebar-search-results">
                     <ul id="search-list" class="search-list">
                         <li class="search-result" ng-repeat="r in pointsOfInterest | filter:{ name: s }" id="{{r.id}}">
-                            <div for="content-{{r.id}}" class="search-result-name" ng-click="toggleSearchResult('content-' + r.id)">
+                            <div for="content-{{r.id}}" class="search-result-name" ng-click="toggle('content-' + r.id)">
                                 <span><i class="fa fa-caret-right">&nbsp</i></span>
                                 {{r.name}}
                             </div>
