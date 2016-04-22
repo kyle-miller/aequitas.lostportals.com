@@ -26,7 +26,7 @@ body,
 .sidebar-tabs,
 .sidebar-header,
 .sidebar-content {
-    background-image: url("../img/backgroundpanel.jpg");
+    background-color: #111111;
 }
 
 .sidebar-tabs li a > i,
@@ -111,14 +111,15 @@ body,
 }
 
 .search-result-content {
-    margin-left: 15px;
-    background: rgba(0, 0, 0, 0.5);
-    size: .8em;
+    border-left: 1px solid white;
+    margin: .5em 0 1em 1em;
+    padding: .5em 0 .5em 1em;
+    font-size: .8em;
+    background:rgba(255, 255, 255, 0.1);
 }
 
 .search-result-content p {
-    margin: 0em 0;
-    padding: 0.5em: 0;
+    margin: 0 0 .2em 0;
 }
 
 .search-result-img > a > img {
