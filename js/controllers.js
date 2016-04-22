@@ -168,6 +168,10 @@ var angularApp = angular.module("bdoApp", []);
 	            if (!sheet) continue;
 	            addSidebarFor(configRow);
 	            for (var row of sheet.all()) {
+	            	if (row.vertices) {
+	            		row.vertexArray = JSON.parse(row.vertices);
+	            	}
+
 	                if (configRow.marker) {
 	                    createMarker(sheetId, sheetName, configRow.marker, row);
 	                }

@@ -52,6 +52,9 @@
                             </div>
                             <div id="content-{{r.id}}" class="search-result-content" style="display:none">
                                 <p class="search-result-coordinates" ng-show="r.row.lat">[{{r.row.lat}}, {{r.row.lon}}]</p>
+                                <p class="search-result-vertices" ng-show="r.row.vertices">
+                                    [<br /><div ng-repeat="v in r.row.vertexArray">{{v[0]}}, {{v[1]}}<br /></div>]
+                                </p>
                                 <p class="search-result-notes" ng-show="r.row.notes">{{r.row.notes}}</p>
                                 <div class="search-result-img" ng-show="r.row.screenshot"><a ng-href="{{r.row.screenshot}}"><img ng-src="{{r.row.screenshot}}"></img></a></div>
                             </div>
