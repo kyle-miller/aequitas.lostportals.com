@@ -65,6 +65,7 @@ var angularApp = angular.module("bdoApp", []);
 	    $(aMarker).hover(function() { this.openPopup(); } , function(){this.closePopup();} );
 	    aMarker.name = row.name;
 	    aMarker.show = showInfoForMarker;
+	    aMarker.row = row;
 	    BDO.addMarker(aMarker);
 	}
 
@@ -179,6 +180,10 @@ var angularApp = angular.module("bdoApp", []);
 	        angular.element('[ng-controller=SearchController]').scope().loadPointsOfInterest();
 	    }
 	});
+
+	$scope.toggleSearchResult = function(id) {
+		$('#' + id).toggle();
+	}
 
 	$scope.loadPointsOfInterest = function() {
 		for (var layerMapObj of BDO.dynamicLayers) {

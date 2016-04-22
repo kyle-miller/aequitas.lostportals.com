@@ -46,11 +46,14 @@
                 <div id="search-content" class="sidebar-search-results">
                     <ul id="search-list" class="search-list">
                         <li class="search-result" ng-repeat="r in pointsOfInterest | filter:{ name: s }" id="{{r.id}}">
-                            <div for="content-{{r.id}}">
-                                <a href="#content-{{r.id}}">
-                                    <span><i class="fa fa-caret-right">&nbsp</i></span>
-                                    {{r.name}}
-                                </a>
+                            <div for="content-{{r.id}}" class="search-result-name" ng-click="toggleSearchResult('content-' + r.id)">
+                                <span><i class="fa fa-caret-right">&nbsp</i></span>
+                                {{r.name}}
+                            </div>
+                            <div id="content-{{r.id}}" class="search-result-content" style="display:none">
+                                <p class="search-result-coordinates" ng-show="r.row.lat">[{{r.row.lat}}, {{r.row.lon}}]</p>
+                                <p class="search-result-notes" ng-show="r.row.notes">{{r.row.notes}}</p>
+                                <div class="search-result-img" ng-show="r.row.screenshot"><a ng-href="{{r.row.screenshot}}"><img ng-src="{{r.row.screenshot}}"></img></a></div>
                             </div>
                         </li>
                     </ul>
