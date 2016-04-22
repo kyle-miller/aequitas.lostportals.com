@@ -100,3 +100,8 @@ body,
     font-size: 1.25em;
     list-style-type: none;
 }
+
+#search-list a {
+    color: white;
+    text-decoration: none;
+}

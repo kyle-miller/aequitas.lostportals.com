@@ -45,7 +45,14 @@
                 </h1>
                 <div id="search-content" class="sidebar-search-results">
                     <ul id="search-list" class="search-list">
-                        <li class="search-result" ng-repeat="r in pointsOfInterest | filter:{ name: s }" id="{{r.id}}">{{r.name}}</li>
+                        <li class="search-result" ng-repeat="r in pointsOfInterest | filter:{ name: s }" id="{{r.id}}">
+                            <div for="content-{{r.id}}">
+                                <a href="#content-{{r.id}}">
+                                    <span><i class="fa fa-caret-right">&nbsp</i></span>
+                                    {{r.name}}
+                                </a>
+                            </div>
+                        </li>
                     </ul>
                 </div>
             </div>
