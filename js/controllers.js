@@ -227,4 +227,23 @@ var angularApp = angular.module("bdoApp", []);
 	});
 
 	observer.observe(document.getElementById("search-list"), {childList: true, attributes: false, characterData: false, subtree: false, attributeOldValue: false, characterDataOldValue: false});
+
+	$('#layer-all').click(function() {
+		var sidebarDiv = $('#layer-all');
+        var allLayersActive = sidebarDiv.hasClass('active');
+        for (var layerMapObj of BDO.dynamicLayers) {
+            var layer = layerMapObj[1];
+            if (allLayersActive) BDO.map.removeLayer(layer);
+            else BDO.map.addLayer(layer);
+        }
+        $('#layer-content .sidebar-layer').each(function() {
+	        if (allLayersActive) {
+	            $(this).removeClass('active');
+	            $(this).addClass('inactive');
+	        } else {
+	            $(this).removeClass('inactive');
+	            $(this).addClass('active');
+	        }
+    	});
+    });
  });
