@@ -1,5 +1,5 @@
 BDO = {};
-BDO.map = L.map('map').setView([0, 0], 0);
+BDO.map = L.map('map');
 BDO.icons = new Map();
 BDO.dynamicLayers = new Map();
 BDO.markers = new Array();
@@ -18,6 +18,7 @@ var mapMinZoom = 2;
 var mapMaxZoom = 6;
 var mapBounds = new L.LatLngBounds(BDO.map.unproject([0, 16384], mapMaxZoom), BDO.map.unproject([16384, 8602], mapMaxZoom));
 BDO.map.fitBounds(mapBounds);
+BDO.map.setView([-70, 0], 3);
 
 BDO.tileLayer = L.tileLayer('http://aequitas.lostportals.com/map/{z}/{x}/{y}.png', {
     minZoom: mapMinZoom,
