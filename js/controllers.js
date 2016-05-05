@@ -94,7 +94,12 @@ var angularApp = angular.module("bdoApp", []);
 
 	var loadIcons = function(tabletop) {
 	    for (var icon of tabletop.sheets("Icons").all()) {
-	        BDO.icons.set(icon.icon, new BDO.LeafIcon({ iconUrl: icon.url }));
+	    	var iconId = uuid();
+	    	var iconSql = "INSERT INTO icons VALUES ('" + iconId + "', '" + icon.url + "', '" + icon.icon + "');";
+	    	console.log(iconSql);
+	    	var leafIcon = new BDO.LeafIcon({ iconUrl: icon.url });
+	    	leafIcon.uuid = iconId;
+	        BDO.icons.set(icon.icon, leafIcon);
 	    }
 	}
 
@@ -155,6 +160,13 @@ var angularApp = angular.module("bdoApp", []);
 	    }
 	    sidebarDiv.append(sidebarP);
 	}
+	
+	var uuid = function() {
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+		    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+		    return v.toString(16);
+		});
+	}
 
 	BDO.tabletop = Tabletop.init({
 	    key: googleDocCode,
@@ -167,19 +179,68 @@ var angularApp = angular.module("bdoApp", []);
 	            var sheet = tabletop.sheets(sheetName);
 	            if (!sheet) continue;
 	            addSidebarFor(configRow);
+	            var entityTypeId = uuid();
+	            var entityTypeSql = "INSERT INTO entityTypes VALUES ('" + entityTypeId + "', NULL, '" + sheetName + "', TRUE);";
+	            console.log(entityTypeSql);
 	            for (var row of sheet.all()) {
 	            	if (row.vertices) {
 	            		row.vertexArray = JSON.parse(row.vertices);
 	            	}
 
 	                if (configRow.marker) {
-	                    createMarker(sheetId, sheetName, configRow.marker, row);
+	                    // createMarker(sheetId, sheetName, configRow.marker, row);
+	                	var entityId = uuid();
+	                    var entitySql = "INSERT INTO entities VALUES ('" + entityId + "', '" + row.name + "');";
+	                    console.log(entitySql);
+	                    var entityEntityTypeXrefSql = "INSERT INTO entityEntityTypeXrefs VALUES ('" + uuid() + "', '" + entityId + "', '" + entityTypeId + "');";
+	                    console.log(entityEntityTypeXrefSql);
+	                    var iconId = BDO.icons.get(configRow.marker).uuid;
+	                    var markerSql = "INSERT INTO markers VALUES ('" + uuid() + "', '" + entityId + "', " + row.lat + ", " + row.lon + ", '" + iconId + "');";
+	                    console.log(markerSql);
+	                    if (row.screenshot) {
+	                    	var imageSql = "INSERT INTO images VALUES('" + uuid() + "', '" + entityId + "', '" + row.screenshot + "');";
+	                    	console.log(imageSql);
+	                    }
+	                    if (row.notes) {
+	                    	var noteSql = "INSERT INTO notes VALUES('" + uuid() + "', '" + entityId + "', '" + row.notes + "', 1);";
+	                    	console.log(noteSql);
+	                    }
 	                }
 	                if (configRow.circle) {
-	                    createCircle(sheetId, configRow.circle, row);
+//	                    createCircle(sheetId, configRow.circle, row);
+	                	var entityId = uuid();
+	                    var entitySql = "INSERT INTO entities VALUES ('" + entityId + "', '" + row.name + "');";
+	                    console.log(entitySql);
+	                    var entityEntityTypeXrefSql = "INSERT INTO entityEntityTypeXrefs VALUES ('" + uuid() + "', '" + entityId + "', '" + entityTypeId + "');";
+	                    console.log(entityEntityTypeXrefSql);
+	                    var circleSql = "INSERT INTO circles VALUES ('" + uuid() + "', '" + entityId + "', " + row.lat + ", " + row.lon + ", " + 11000 + ", '" + configRow.circle + "', '" + configRow.circle + "');";
+	                    console.log(circleSql);
+	                    if (row.screenshot) {
+	                    	var imageSql = "INSERT INTO images VALUES('" + uuid() + "', '" + entityId + "', '" + row.screenshot + "');";
+	                    	console.log(imageSql);
+	                    }
+	                    if (row.notes) {
+	                    	var noteSql = "INSERT INTO notes VALUES('" + uuid() + "', '" + entityId + "', '" + row.notes + "', 1);";
+	                    	console.log(noteSql);
+	                    }
 	                }
 	                if (configRow.polygon) {
-	                    drawPolygon(sheetId, configRow.polygon, row);
+//	                    drawPolygon(sheetId, configRow.polygon, row);
+	                	var entityId = uuid();
+	                    var entitySql = "INSERT INTO entities VALUES ('" + entityId + "', '" + row.name + "');";
+	                    console.log(entitySql);
+	                    var entityEntityTypeXrefSql = "INSERT INTO entityEntityTypeXrefs VALUES ('" + uuid() + "', '" + entityId + "', '" + entityTypeId + "');";
+	                    console.log(entityEntityTypeXrefSql);
+	                    var polygonSql = "INSERT INTO polygons VALUES ('" + uuid() + "', '" + entityId + "', '" + row.vertices + "');";
+	                    console.log(polygonSql);
+	                    if (row.screenshot) {
+	                    	var imageSql = "INSERT INTO images VALUES('" + uuid() + "', '" + entityId + "', '" + row.screenshot + "');";
+	                    	console.log(imageSql);
+	                    }
+	                    if (row.notes) {
+	                    	var noteSql = "INSERT INTO notes VALUES('" + uuid() + "', '" + entityId + "', '" + row.notes + "', 1);";
+	                    	console.log(noteSql);
+	                    }
 	                }
 	            }
 	        }
