@@ -11,15 +11,15 @@ var angularApp = angular.module("bdoApp", []);
 	    $("#info-node").addClass("hidden");
 	}
 
-	var showCoordinates = function(e) {
-	    hideInfoDivs();
-	    $("#info .sidebar-header").children().first().text("Coordinates [Lat, Long]");
-	    $("#info-coordinates .coord-data").html("[" + e.latlng.lat + ", " + e.latlng.lng + "]");
-	    $("#info-coordinates").removeClass("hidden");
-	    BDO.sidebar.open("info");
-	}
+	// var showCoordinates = function(e) {
+	//     hideInfoDivs();
+	//     $("#info .sidebar-header").children().first().text("Coordinates [Lat, Long]");
+	//     $("#info-coordinates .coord-data").html("[" + e.latlng.lat + ", " + e.latlng.lng + "]");
+	//     $("#info-coordinates").removeClass("hidden");
+	//     BDO.sidebar.open("info");
+	// }
 
-	BDO.map.on('click', showCoordinates);
+	// BDO.map.on('click', showCoordinates);
 
 	var polygonPopupLocation = function(latlngs) {
 	    var maxLat;
@@ -85,7 +85,7 @@ var angularApp = angular.module("bdoApp", []);
 	    var aPolygon = L.polygon(JSON.parse(row.vertices), { color: color });
 	    aPolygon.bindPopup(row.name);
 	    $(aPolygon).hover(function() { this.openPopup(polygonPopupLocation(aPolygon._latlngs)); }, function() { this.closePopup(); });
-	    aPolygon.on('click', showCoordinates);
+	    // aPolygon.on('click', showCoordinates);
 	    aPolygon.type = sheetId;
 	    aPolygon.name = row.name;
 	    aPolygon.row = row;
@@ -227,23 +227,4 @@ var angularApp = angular.module("bdoApp", []);
 	});
 
 	observer.observe(document.getElementById("search-list"), {childList: true, attributes: false, characterData: false, subtree: false, attributeOldValue: false, characterDataOldValue: false});
-
-	$('#layer-all').click(function() {
-		var sidebarDiv = $('#layer-all');
-        var allLayersActive = sidebarDiv.hasClass('active');
-        for (var layerMapObj of BDO.dynamicLayers) {
-            var layer = layerMapObj[1];
-            if (allLayersActive) BDO.map.removeLayer(layer);
-            else BDO.map.addLayer(layer);
-        }
-        $('#layer-content .sidebar-layer').each(function() {
-	        if (allLayersActive) {
-	            $(this).removeClass('active');
-	            $(this).addClass('inactive');
-	        } else {
-	            $(this).removeClass('inactive');
-	            $(this).addClass('active');
-	        }
-    	});
-    });
  });
