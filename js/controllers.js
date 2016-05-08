@@ -71,7 +71,8 @@ controllerApp.controller('MapController', function($scope) {
 		});
 		$(entity.polygons).each(function() {
 			var polygon = this;
-			var mapPolygon = L.polygon(JSON.parse(polygon.vertices), {
+			polygon.vertexArray = JSON.parse(polygon.vertices);
+			var mapPolygon = L.polygon(polygon.vertexArray, {
 				color: polygon.outlineColor, 
 				fillColor: polygon.fillColor
 			});
@@ -79,7 +80,7 @@ controllerApp.controller('MapController', function($scope) {
 			mapPolygon.entity = entity;
 			mapPolygon.polygon = polygon;
 			mapPolygon.bindPopup(entity.title);
-			$(mapPolygon).hover(function() { this.openPopup(polygonPopupLocation(this._latlngs)); } , function(){this.closePopup();} );
+			$(mapPolygon).hover(function() { this.openPopup(polygonPopupLocation(this._latlngs)); } , function(){ this.closePopup(); } );
 			mapLayers.push(mapPolygon);
 		});
 	});
@@ -87,6 +88,32 @@ controllerApp.controller('MapController', function($scope) {
 });
 
 controllerApp.controller('SidebarController', function($scope) {
+	sidebar = L.control.sidebar('sidebar').addTo(map);
+
+	/* Hide other sidebar items and show the clicked coordinates */
+	var showCoordinates = function(e) {
+	    $('#info-coordinates').addClass('hidden');
+	    $('#info-node').addClass('hidden');
+	    $('#info .sidebar-header').children().first().text('Coordinates [Lat, Long]');
+	    $('#info-coordinates .coord-data').html('[' + e.latlng.lat + ', ' + e.latlng.lng + ']');
+	    $('#info-coordinates').removeClass('hidden');
+	    sidebar.open('info');
+	}
+	map.on('click', showCoordinates);
+
+	/* Visibility: Create an all layers filter */
+	$('#layer-all').click(function() {
+	    var allLayersActive = $('#layer-all').hasClass('active');
+	    $(map.mapLayers).each(function() {
+	        allLayersActive ? map.removeLayer(this) : map.addLayer(this);
+	    });
+	    $('#layer-content .sidebar-layer').each(function() {
+	    	$(this).removeClass(allLayersActive ? 'active' : 'inactive');
+	    	$(this).addClass(allLayersActive ? 'inactive' : 'active');
+		});
+	});
+
+	/* Visibility: Create an entry for each type */
 	$($scope.types).each(function() {
 		var type = this;
 		var $sidebarDiv = $('<div id="layer-' + type.id + '" class="sidebar-layer active"></div>');
@@ -108,7 +135,7 @@ controllerApp.controller('SidebarController', function($scope) {
 	    $("#layer-content").append($sidebarDiv);
 	});
 	
-	sidebar = L.control.sidebar('sidebar').addTo(map);
+	/* Search: Create a search entry for each map layer */
 	$(map.mapLayers).each(function() {
 		if (this.marker) {
 			$(this.marker).click(function() {
@@ -129,65 +156,58 @@ controllerApp.controller('SidebarController', function($scope) {
 			    sidebar.open('info');
 			});
 		}
+		if (this.polygon) {
+			this.on('click', showCoordinates);
+		}
 	});
-
-	var showCoordinates = function(e) {
-	    $('#info-coordinates').addClass('hidden');
-	    $('#info-node').addClass('hidden');
-	    $('#info .sidebar-header').children().first().text('Coordinates [Lat, Long]');
-	    $('#info-coordinates .coord-data').html('[' + e.latlng.lat + ', ' + e.latlng.lng + ']');
-	    $('#info-coordinates').removeClass('hidden');
-	    sidebar.open('info');
+	
+	/* For toggling search items to show or not when clicked */
+	$scope.toggle = function(id) {
+		$('#' + id).toggle();
+		
+		var caret = $('[for=' + id + '] > span > i');
+		var display = $('#' + id).css('display') == 'none';
+		caret.removeClass(display ? 'fa-caret-down' : 'fa-caret-right');
+		caret.addClass(display ? 'fa-caret-right' : 'fa-caret-down');
 	}
-	map.on('click', showCoordinates);
-
-	$('#layer-all').click(function() {
-	    var allLayersActive = $('#layer-all').hasClass('active');
-	    $(map.mapLayers).each(function() {
-	        allLayersActive ? map.removeLayer(this) : map.addLayer(this);
-	    });
-	    $('#layer-content .sidebar-layer').each(function() {
-	    	$(this).removeClass(allLayersActive ? 'active' : 'inactive');
-	    	$(this).addClass(allLayersActive ? 'inactive' : 'active');
+	
+	/* Search: Hide/Show layers based on search filter */
+	var observer = new MutationObserver(function(mutations) {
+		$(mutations).each(function() {
+			$(this.addedNodes).each(function() {
+				var id = parseInt($(this).attr('id'));
+				if (id) {
+//					map.addLayer(map.mapLayers);
+				}
+			});
+			$(this.removedNodes).each(function() {
+				var id = parseInt($(this).attr('id'));
+				if (id) {
+//					map.removeLayer(map.mapLayers);
+				}
+			});
 		});
+//	  for (var mutation of mutations) {
+//	    for (var i = 0; i < mutation.addedNodes.length; i++) {
+////	    	console.log(mutation.addedNodes[i]);
+//	    	var id = parseInt($(mutation.addedNodes[i]).attr('id'));
+//	    	if (id) {
+////	    		map.addLayer(map.mapLayers);
+//			}
+//	    }
+//	    for (var i = 0; i < mutation.removedNodes.length; i++) {
+//	    	var id = parseInt($(mutation.removedNodes[i]).attr('id'));
+//	    	if (id) {
+////	    		map.removeLayer(map.mapLayers);
+//	    	}
+//	    }
+//	  };
 	});
+
+	observer.observe(document.getElementById("search-list"), {childList: true, attributes: false, characterData: false, subtree: false, attributeOldValue: false, characterDataOldValue: false});
 });
 	
 //	angularApp.controller("SearchController", function($scope) {
-//		$scope.pointsOfInterest = new Array();
-//		var googleDocCode = "1VtxMqver7ocbImx9IdTsTX0KdfAgbRCJcRK-J2w5yv8";
-//		var configTabName = "Configuration";
-//	
-//		/* Consider moving everything below to a new js file */
-//	
-//		var hideInfoDivs = function() {
-//		    $("#info-coordinates").addClass("hidden");
-//		    $("#info-node").addClass("hidden");
-//		}
-//	
-//		var showCoordinates = function(e) {
-//		    hideInfoDivs();
-//		    $("#info .sidebar-header").children().first().text("Coordinates [Lat, Long]");
-//		    $("#info-coordinates .coord-data").html("[" + e.latlng.lat + ", " + e.latlng.lng + "]");
-//		    $("#info-coordinates").removeClass("hidden");
-//		    BDO.sidebar.open("info");
-//		}
-//	
-//		BDO.map.on('click', showCoordinates);
-//	
-//		var polygonPopupLocation = function(latlngs) {
-//		    var maxLat;
-//		    var avgLng = 0;
-//		    for (var latlng of latlngs) {
-//		        if (!maxLat || latlng.lat > maxLat) {
-//		            maxLat = latlng.lat;
-//		        }
-//		        avgLng += latlng.lng;
-//		    }
-//		    avgLng /= latlngs.length;
-//		    return new L.LatLng(maxLat, avgLng);
-//		}
-//	
 //		var createMarker = function(sheetId, sheetName, icon, row) {
 //		    var aMarker = L.marker([row.lat, row.lon], { icon: BDO.icons.get(icon) });
 //		    aMarker.type = sheetId;
@@ -221,41 +241,6 @@ controllerApp.controller('SidebarController', function($scope) {
 //		    aMarker.show = showInfoForMarker;
 //		    aMarker.row = row;
 //		    BDO.addMarker(aMarker);
-//		}
-//	
-//		var createCircle = function(sheetId, color, row) {
-//		    var aCircle = L.circle([row.lat, row.lon], 11000, {
-//		        color: color,
-//		        fillColor: color,
-//		        fillOpacity: 0.5
-//		    });
-//		    aCircle.type = sheetId;
-//		    aCircle.name = row.name;
-//		    aCircle.row = row;
-//		    BDO.addCircle(aCircle);
-//		}
-//	
-//		var drawPolygon = function(sheetId, color, row) {
-//		    var aPolygon = L.polygon(JSON.parse(row.vertices), { color: color });
-//		    aPolygon.bindPopup(row.name);
-//		    $(aPolygon).hover(function() { this.openPopup(polygonPopupLocation(aPolygon._latlngs)); }, function() { this.closePopup(); });
-//		    aPolygon.on('click', showCoordinates);
-//		    aPolygon.type = sheetId;
-//		    aPolygon.name = row.name;
-//		    aPolygon.row = row;
-//		    BDO.addPolygon(aPolygon);
-//		}
-//	
-//		var loadIcons = function(tabletop) {
-//		    for (var icon of tabletop.sheets("Icons").all()) {
-//		        BDO.icons.set(icon.icon, new BDO.LeafIcon({ iconUrl: icon.url }));
-//		    }
-//		}
-//	
-//		var loadTreeTypes = function(tabletop) {
-//		    for (var treeType of tabletop.sheets("Tree Types").all()) {
-//		        BDO.treeTypes.push(treeType);
-//		    }
 //		}
 //	
 //		var addSidebarFor = function(configRow) {
@@ -310,51 +295,6 @@ controllerApp.controller('SidebarController', function($scope) {
 //		    sidebarDiv.append(sidebarP);
 //		}
 //	
-//		BDO.tabletop = Tabletop.init({
-//		    key: googleDocCode,
-//		    callback: function(data, tabletop) {
-//		        loadIcons(tabletop);
-//		        loadTreeTypes(tabletop);
-//		        for (var configRow of tabletop.sheets(configTabName).all()) {
-//		            var sheetName = configRow.name;
-//		            var sheetId = configRow.id;
-//		            var sheet = tabletop.sheets(sheetName);
-//		            if (!sheet) continue;
-//		            addSidebarFor(configRow);
-//		            for (var row of sheet.all()) {
-//		            	if (row.vertices) {
-//		            		row.vertexArray = JSON.parse(row.vertices);
-//		            	}
-//	
-//		                if (configRow.marker) {
-//		                    createMarker(sheetId, sheetName, configRow.marker, row);
-//		                }
-//		                if (configRow.circle) {
-//		                    createCircle(sheetId, configRow.circle, row);
-//		                }
-//		                if (configRow.polygon) {
-//		                    drawPolygon(sheetId, configRow.polygon, row);
-//		                }
-//		            }
-//		        }
-//		        angular.element('[ng-controller=SearchController]').scope().loadPointsOfInterest();
-//		    }
-//		});
-//	
-//		$scope.toggle = function(id) {
-//			$('#' + id).toggle();
-//			
-//			var caret = $('[for=' + id + '] > span > i')
-//			if ($('#' + id).css('display') == 'none') {
-//				console.log($('[for=' + id + ']'));
-//				caret.removeClass('fa-caret-down');
-//				caret.addClass('fa-caret-right');
-//			} else {
-//				caret.removeClass('fa-caret-right');
-//				caret.addClass('fa-caret-down');
-//			}
-//		}
-//	
 //		$scope.loadPointsOfInterest = function() {
 //			for (var layerMapObj of BDO.dynamicLayers) {
 //				var layer = layerMapObj[1];
@@ -381,23 +321,4 @@ controllerApp.controller('SidebarController', function($scope) {
 //		});
 //	
 //		observer.observe(document.getElementById("search-list"), {childList: true, attributes: false, characterData: false, subtree: false, attributeOldValue: false, characterDataOldValue: false});
-//	
-//		$('#layer-all').click(function() {
-//			var sidebarDiv = $('#layer-all');
-//	        var allLayersActive = sidebarDiv.hasClass('active');
-//	        for (var layerMapObj of BDO.dynamicLayers) {
-//	            var layer = layerMapObj[1];
-//	            if (allLayersActive) BDO.map.removeLayer(layer);
-//	            else BDO.map.addLayer(layer);
-//	        }
-//	        $('#layer-content .sidebar-layer').each(function() {
-//		        if (allLayersActive) {
-//		            $(this).removeClass('active');
-//		            $(this).addClass('inactive');
-//		        } else {
-//		            $(this).removeClass('inactive');
-//		            $(this).addClass('active');
-//		        }
-//	    	});
-//	    });
 //	 });

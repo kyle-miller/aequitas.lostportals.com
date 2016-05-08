@@ -34,18 +34,19 @@
             </h1>
             <div id="search-content" class="sidebar-search-results">
                 <ul id="search-list" class="search-list">
-                    <li class="search-result" ng-repeat="t in entities | filter:{ title: s }" id="{{t.id}}">
-                        <div for="content-{{t.id}}" class="search-result-name" ng-click="toggle('content-' + t.id)">
+                    <li class="search-result" ng-repeat="e in entities | filter:{ title: s }" id="{{e.id}}">
+                        <div for="content-{{e.id}}" class="search-result-name" ng-click="toggle('content-' + e.id)">
                             <span><i class="fa fa-caret-right">&nbsp</i></span>
-                            {{t.title}}
+                            {{e.title}}
                         </div>
-                        <div id="content-{{t.id}}" class="search-result-content" style="display:none">
-                            <p class="search-result-coordinates" ng-show="t.latitude">[{{t.latitude}}, {{t.longitude}}]</p>
-                            <p class="search-result-vertices" ng-show="t.vertices">
-                                [ <br /><span ng-repeat="v in t.vertices">{{v[0]}}, {{v[1]}}<br /></span> ]
+                        <div id="content-{{e.id}}" class="search-result-content" style="display:none">
+                            <p class="search-result-coordinates" ng-repeat="m in e.markers">[{{m.latitude}}, {{m.longitude}}]</p>
+                            <p class="search-result-coordinates" ng-repeat="c in e.circles">[{{c.latitude}}, {{c.longitude}}]</p>
+                            <p class="search-result-vertices" ng-repeat="p in e.polygons">
+                                [ <br /><span ng-repeat="v in p.vertexArray">{{v[0]}}, {{v[1]}}<br /></span> ]
                             </p>
-                            <p class="search-result-notes" ng-show="t.notes">{{t.notes}}</p>
-                            <div class="search-result-img" ng-show="t.url"><a ng-href="{{t.url}}"><img ng-src="{{t.url}}"></img></a></div>
+                            <p class="search-result-notes" ng-repeat="n in e.notes">{{n.note}}</p>
+                            <div class="search-result-img" ng-repeat="i in e.images"><a ng-href="{{i.url}}"><img ng-src="{{i.url}}"></img></a></div>
                         </div>
                     </li>
                 </ul>
