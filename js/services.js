@@ -7,5 +7,5 @@ servicesApp.factory('EntityService', function($resource) {
 });
 
 servicesApp.factory('TypeService', function($resource) {
-	return $resource(API_ENDPOINT + '/entityTypes');
+	return $resource(API_ENDPOINT + '/mapEntityTypes');
 });
