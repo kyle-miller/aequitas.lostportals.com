@@ -1,16 +1,157 @@
-BDO = {};
-var controllerApp = angular.module('bdoApp.controllers', ['ngResource']);
+var controllerApp = angular.module('bdoApp.controllers', []);
 
-controllerApp.controller('AppController', ['$scope', 'EntityService', function($scope, EntityService) {
-	BDO.entities = [];	
+controllerApp.controller('AppController', function($scope, EntityService, TypeService) {
+	$scope.entities = [];	
 	EntityService.query({'ajaxId':'entities'}, function(data) {
-		BDO.entities = data; 
+		$scope.entities = data;
 	});
-}]);
 
-controllerApp.controller('MapController', ['$scope', function($scope) {
+	$scope.types = [];	
+	TypeService.query({'ajaxId':'types'}, function(data) {
+		$scope.types = data;
+	});
+});
+
+controllerApp.controller('MapController', function($scope) {
+	var LeafIcon = L.Icon.extend({
+	    options: {
+	        iconSize: [47, 37],
+	        iconAnchor: [25, 45],
+	        popupAnchor: [0, -47]
+	    }
+	});
 	
-}]);
+	var polygonPopupLocation = function(latlngs) {
+	    var maxLat, sumLng = 0;
+	    $(latlngs).each(function() {
+	    	if (!maxLat || this.lat > maxLat)
+	            maxLat = this.lat;
+	        sumLng += this.lng;
+	    });
+	    return new L.LatLng(maxLat, sumLng / latlngs.length);
+	}
+
+	map = L.map('map').setView([-70, 0], 3);
+	map.fitBounds(new L.LatLngBounds(map.unproject([0, 16384], 6), map.unproject([16384, 8602], 6)));
+	map.addLayer(L.tileLayer('http://aequitas.lostportals.com/map/{z}/{x}/{y}.png', {
+	    minZoom: 2,
+	    maxZoom: 6,
+	    attribution: 'Aequitas Black Desert Map',
+	    tms: true,
+	    continuousWorld: true,
+	    noWarp: true
+	}));
+
+	var mapLayers = [];
+	$($scope.entities).each(function() {
+		var entity = this;
+		$(entity.markers).each(function() {
+			var marker = this;
+			var mapMarker = L.marker([marker.latitude, marker.longitude], { icon: new LeafIcon({ iconUrl: marker.icon.url }) });
+			mapMarker.addTo(map);
+			mapMarker.entity = entity;
+			mapMarker.marker = marker;
+			mapMarker.bindPopup(entity.title);
+			$(mapMarker).hover(function() { this.openPopup(); } , function(){this.closePopup();} );
+			mapLayers.push(mapMarker);
+		});
+		$(entity.circles).each(function() {
+			var circle = this;
+			var mapCircle = L.circle([circle.latitude, circle.longitude], circle.radius, {
+		        color: circle.outlineColor,
+		        fillColor: circle.fillColor,
+		        fillOpacity: 0.5
+		    });
+			mapCircle.addTo(map);
+			mapCircle.entity = entity;
+			mapCircle.circle = circle;
+			mapCircle.bindPopup(entity.title);
+			$(mapCircle).hover(function() { this.openPopup(); } , function(){this.closePopup();} );
+			mapLayers.push(mapCircle);
+		});
+		$(entity.polygons).each(function() {
+			var polygon = this;
+			var mapPolygon = L.polygon(JSON.parse(polygon.vertices), {
+				color: polygon.outlineColor, 
+				fillColor: polygon.fillColor
+			});
+			mapPolygon.addTo(map);
+			mapPolygon.entity = entity;
+			mapPolygon.polygon = polygon;
+			mapPolygon.bindPopup(entity.title);
+			$(mapPolygon).hover(function() { this.openPopup(polygonPopupLocation(this._latlngs)); } , function(){this.closePopup();} );
+			mapLayers.push(mapPolygon);
+		});
+	});
+	map.mapLayers = mapLayers;
+});
+
+controllerApp.controller('SidebarController', function($scope) {
+	$($scope.types).each(function() {
+		var type = this;
+		var $sidebarDiv = $('<div id="layer-' + type.id + '" class="sidebar-layer active"></div>');
+	    $sidebarDiv.append($('<p>' + type.name + '</p>'));
+	    $sidebarDiv.click(function() {
+	        var active = $('#layer-' + type.id).hasClass('active');
+	        $(map.mapLayers).each(function() {
+	        	var mapLayer = this;
+	        	$(this.entity.types).each(function() {
+	        		entityType = this;
+	        		if (entityType.id == type.id) {
+	        			active ? map.removeLayer(mapLayer) : map.addLayer(mapLayer);
+	        		}
+	        	});
+	        });
+	        $(this).removeClass(active ? 'active' : 'inactive');
+	    	$(this).addClass(active ? 'inactive' : 'active');
+	    });
+	    $("#layer-content").append($sidebarDiv);
+	});
+	
+	sidebar = L.control.sidebar('sidebar').addTo(map);
+	$(map.mapLayers).each(function() {
+		if (this.marker) {
+			$(this.marker).click(function() {
+				$('#info-coordinates').addClass('hidden');
+			    $('#info-node').addClass('hidden');
+			    $('#info .sidebar-header').children().first().text(headerText);
+			    $('#info-node .node-name').text(this.entity.title);
+			    if (this.entity.notes) {
+			    	mapLayer.entity.notes.each(function() {
+			    		$('#info-node .node-notes').append('<p>' + this + '</p>');
+			    	});
+			    }
+			    $('info-node .node-coordinates').text('[' + this.marker.latitude + ', ' + this.marker.longitude + ']');
+			    if (this.marker.icon && this.marker.icon.url) {
+			    	$('#info-node .node-img').html('<a href="' + this.marker.icon.url + '"><img src="' + this.marker.icon.url + '" width="300px"></img></a>');
+			    }
+			    $('#info-node').removeClass('hidden');
+			    sidebar.open('info');
+			});
+		}
+	});
+
+	var showCoordinates = function(e) {
+	    $('#info-coordinates').addClass('hidden');
+	    $('#info-node').addClass('hidden');
+	    $('#info .sidebar-header').children().first().text('Coordinates [Lat, Long]');
+	    $('#info-coordinates .coord-data').html('[' + e.latlng.lat + ', ' + e.latlng.lng + ']');
+	    $('#info-coordinates').removeClass('hidden');
+	    sidebar.open('info');
+	}
+	map.on('click', showCoordinates);
+
+	$('#layer-all').click(function() {
+	    var allLayersActive = $('#layer-all').hasClass('active');
+	    $(map.mapLayers).each(function() {
+	        allLayersActive ? map.removeLayer(this) : map.addLayer(this);
+	    });
+	    $('#layer-content .sidebar-layer').each(function() {
+	    	$(this).removeClass(allLayersActive ? 'active' : 'inactive');
+	    	$(this).addClass(allLayersActive ? 'inactive' : 'active');
+		});
+	});
+});
 	
 //	angularApp.controller("SearchController", function($scope) {
 //		$scope.pointsOfInterest = new Array();

@@ -1,14 +1,55 @@
 <div id="map"></div>
-<script>
-var map = L.map('map').setView([-70, 0], 3);
-$scope.map = map;
-map.fitBounds(new L.LatLngBounds(map.unproject([0, 16384], 6), map.unproject([16384, 8602], 6)));
-map.addLayer(L.tileLayer('http://aequitas.lostportals.com/map/{z}/{x}/{y}.png', {
-    minZoom: 2,
-    maxZoom: 6,
-    attribution: 'Aequitas Black Desert Map',
-    tms: true,
-    continuousWorld: true,
-    noWarp: true
-}));
-</script>
+<div id="sidebar" class="sidebar collapsed" ng-controller="SidebarController">
+    <!-- Nav tabs -->
+    <div class="sidebar-tabs">
+        <ul role="tablist">
+        	<li for="info"><a href="#info" role="tab"><i class="fa fa-info"></i></a></li>
+            <li for="layers"><a href="#layers" role="tab"><i class="fa fa-eye"></i></a></li>
+            <li for="search"><a href="#search" role="tab"><i class="fa fa-search"></i></a></li>
+        </ul>
+
+        <!-- <ul role="tablist">
+            <li for="settings"><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>
+        </ul> -->
+    </div>
+
+    <!-- Tab panes -->
+    <div class="sidebar-content">
+    	<div class="sidebar-pane" id="info">
+            <h1 class="sidebar-header"><span>Info</span><span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+            <div id="info-coordinates" class="hidden"><p class="coord-data"></p></div>
+            <div id="info-node" class="hidden"><h2 class="node-name"></h2><p class="node-coordinates"></p><p class="node-notes"></p><div class="node-img"></div></div>
+        </div>
+        <div class="sidebar-pane" id="layers">
+            <h1 class="sidebar-header"><span>Hide/Show Layers</span><span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+            <div id="layer-content" class="sidebar-layers">
+                <div id="layer-all" class="sidebar-layer active"><p>All Layers</p></div>
+            </div>
+        </div>
+        <div class="sidebar-pane" id="search">
+            <h1 class="sidebar-header">
+                <span>Search</span>
+                <input type="search" ng-model="s" id="searchFilter" class="search-query form-control" />
+                <span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+            </h1>
+            <div id="search-content" class="sidebar-search-results">
+                <ul id="search-list" class="search-list">
+                    <li class="search-result" ng-repeat="t in entities | filter:{ title: s }" id="{{t.id}}">
+                        <div for="content-{{t.id}}" class="search-result-name" ng-click="toggle('content-' + t.id)">
+                            <span><i class="fa fa-caret-right">&nbsp</i></span>
+                            {{t.title}}
+                        </div>
+                        <div id="content-{{t.id}}" class="search-result-content" style="display:none">
+                            <p class="search-result-coordinates" ng-show="t.latitude">[{{t.latitude}}, {{t.longitude}}]</p>
+                            <p class="search-result-vertices" ng-show="t.vertices">
+                                [ <br /><span ng-repeat="v in t.vertices">{{v[0]}}, {{v[1]}}<br /></span> ]
+                            </p>
+                            <p class="search-result-notes" ng-show="t.notes">{{t.notes}}</p>
+                            <div class="search-result-img" ng-show="t.url"><a ng-href="{{t.url}}"><img ng-src="{{t.url}}"></img></a></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
