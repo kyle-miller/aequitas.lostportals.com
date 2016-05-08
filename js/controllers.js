@@ -21,6 +21,7 @@ controllerApp.controller('MapController', function($scope) {
 	    }
 	});
 	
+	/* To determine the location of the popup on a polygon */
 	var polygonPopupLocation = function(latlngs) {
 	    var maxLat, sumLng = 0;
 	    $(latlngs).each(function() {
@@ -85,6 +86,11 @@ controllerApp.controller('MapController', function($scope) {
 		});
 	});
 	map.mapLayers = mapLayers;
+	var mapLayersMap = new Map();
+	$(mapLayers).each(function() {
+		mapLayersMap.set(this.entity.id, this);
+	});
+	map.mapLayersMap = mapLayersMap;
 });
 
 controllerApp.controller('SidebarController', function($scope) {
@@ -175,36 +181,26 @@ controllerApp.controller('SidebarController', function($scope) {
 	var observer = new MutationObserver(function(mutations) {
 		$(mutations).each(function() {
 			$(this.addedNodes).each(function() {
-				var id = parseInt($(this).attr('id'));
-				if (id) {
-//					map.addLayer(map.mapLayers);
+				if ($(this).hasClass('search-result')) {
+		    		map.addLayer(map.mapLayersMap.get($(this).attr('id')));
 				}
 			});
 			$(this.removedNodes).each(function() {
-				var id = parseInt($(this).attr('id'));
-				if (id) {
-//					map.removeLayer(map.mapLayers);
+				if ($(this).hasClass('search-result')) {
+					map.removeLayer(map.mapLayersMap.get($(this).attr('id')));
 				}
 			});
 		});
-//	  for (var mutation of mutations) {
-//	    for (var i = 0; i < mutation.addedNodes.length; i++) {
-////	    	console.log(mutation.addedNodes[i]);
-//	    	var id = parseInt($(mutation.addedNodes[i]).attr('id'));
-//	    	if (id) {
-////	    		map.addLayer(map.mapLayers);
-//			}
-//	    }
-//	    for (var i = 0; i < mutation.removedNodes.length; i++) {
-//	    	var id = parseInt($(mutation.removedNodes[i]).attr('id'));
-//	    	if (id) {
-////	    		map.removeLayer(map.mapLayers);
-//	    	}
-//	    }
-//	  };
 	});
 
-	observer.observe(document.getElementById("search-list"), {childList: true, attributes: false, characterData: false, subtree: false, attributeOldValue: false, characterDataOldValue: false});
+	observer.observe(document.getElementById("search-list"), {
+		childList: true,
+		attributes: false,
+		characterData: false,
+		subtree: false,
+		attributeOldValue: false,
+		characterDataOldValue: false
+	});
 });
 	
 //	angularApp.controller("SearchController", function($scope) {
