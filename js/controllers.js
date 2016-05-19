@@ -34,14 +34,14 @@ controllerApp.controller('MapController', function($scope) {
 
 	map = L.map('map').setView([-70, 0], 3);
 	map.fitBounds(new L.LatLngBounds(map.unproject([0, 16384], 6), map.unproject([16384, 8602], 6)));
-	map.addLayer(L.tileLayer('http://aequitas.lostportals.com/map/{z}/{x}/{y}.png', {
-	    minZoom: 2,
-	    maxZoom: 6,
-	    attribution: 'Aequitas Black Desert Map',
-	    tms: true,
-	    continuousWorld: true,
-	    noWarp: true
-	}));
+	L.tileLayer('http://aequitas.lostportals.com/map/{z}/{x}/{y}.png', {
+		minZoom: 2,
+		maxZoom: 6,
+		attribution: 'Aequitas Black Desert Map',
+		tms: true,
+		continuousWorld: true,
+		noWarp: true
+	}).addTo(map);
 
 	var mapLayers = [];
 	$($scope.entities).each(function() {
@@ -94,7 +94,9 @@ controllerApp.controller('MapController', function($scope) {
 });
 
 controllerApp.controller('SidebarController', function($scope) {
-	sidebar = L.control.sidebar('sidebar').addTo(map);
+	sidebar = L.control.sidebar('sidebar', {
+		position: 'right'
+	}).addTo(map);
 
 	/* Hide other sidebar items and show the clicked coordinates */
 	var showCoordinates = function(e) {
@@ -111,7 +113,7 @@ controllerApp.controller('SidebarController', function($scope) {
 	$('#layer-all').click(function() {
 	    var allLayersActive = $('#layer-all').hasClass('active');
 	    $(map.mapLayers).each(function() {
-	        allLayersActive ? map.removeLayer(this) : map.addLayer(this);
+	        allLayersActive ? map.removeLayer(this) : this.addTo(map);
 	    });
 	    $('#layer-content .sidebar-layer').each(function() {
 	    	$(this).removeClass(allLayersActive ? 'active' : 'inactive');
@@ -131,7 +133,7 @@ controllerApp.controller('SidebarController', function($scope) {
 	        	$(this.entity.types).each(function() {
 	        		entityType = this;
 	        		if (entityType.id == type.id) {
-	        			active ? map.removeLayer(mapLayer) : map.addLayer(mapLayer);
+	        			active ? map.removeLayer(mapLayer) : mapLayer.addTo(map);
 	        		}
 	        	});
 	        });
@@ -182,7 +184,7 @@ controllerApp.controller('SidebarController', function($scope) {
 		$(mutations).each(function() {
 			$(this.addedNodes).each(function() {
 				if ($(this).hasClass('search-result')) {
-		    		map.addLayer(map.mapLayersMap.get($(this).attr('id')));
+		    		map.mapLayersMap.get($(this).attr('id')).addTo(map);
 				}
 			});
 			$(this.removedNodes).each(function() {
