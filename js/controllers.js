@@ -91,6 +91,29 @@ controllerApp.controller('MapController', function($scope) {
 		mapLayersMap.set(this.entity.id, this);
 	});
 	map.mapLayersMap = mapLayersMap;
+	
+	/* Drawing Controls */
+	drawnItems = new L.FeatureGroup().addTo(map);
+
+	drawControl = new L.Control.Draw({
+		 position: 'topleft',
+		 draw: {
+			  polyline: false,
+			  polygon: { 
+					allowIntersection: false
+			  },
+			  circle: false,
+			  rectangle: false
+		 },
+		 edit: {
+			  featureGroup: drawnItems
+		 }
+	}).addTo(map);
+
+	map.on('draw:created', function (e) {
+		 // Save to spreadsheet
+		 drawnItems.addLayer(e.layer);
+	});
 });
 
 controllerApp.controller('SidebarController', function($scope) {
@@ -184,7 +207,7 @@ controllerApp.controller('SidebarController', function($scope) {
 		$(mutations).each(function() {
 			$(this.addedNodes).each(function() {
 				if ($(this).hasClass('search-result')) {
-		    		map.mapLayersMap.get($(this).attr('id')).addTo(map);
+					map.mapLayersMap.get($(this).attr('id')).addTo(map);
 				}
 			});
 			$(this.removedNodes).each(function() {
@@ -195,14 +218,16 @@ controllerApp.controller('SidebarController', function($scope) {
 		});
 	});
 
-	observer.observe(document.getElementById("search-list"), {
-		childList: true,
-		attributes: false,
-		characterData: false,
-		subtree: false,
-		attributeOldValue: false,
-		characterDataOldValue: false
-	});
+	setTimeout(function() {
+		observer.observe(document.getElementById("search-list"), {
+			childList: true,
+			attributes: false,
+			characterData: false,
+			subtree: false,
+			attributeOldValue: false,
+			characterDataOldValue: false
+		});
+	}, 1000);
 });
 	
 //	angularApp.controller("SearchController", function($scope) {
