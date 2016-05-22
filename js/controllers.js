@@ -1,4 +1,5 @@
 var controllerApp = angular.module('bdoApp.controllers', []);
+
 controllerApp.config(function($httpProvider) {
 	$httpProvider.defaults.headers.common = {};
 	$httpProvider.defaults.headers.post = {};
@@ -41,31 +42,8 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 
 	map = L.map('map').setView([-70, 0], 3);
 	map.fitBounds(new L.LatLngBounds(map.unproject([0, 16384], 6), map.unproject([16384, 8602], 6)));
-<<<<<<< HEAD
-	map.addLayer(L.tileLayer('http://aequitas.lostportals.com/map/{z}/{x}/{y}.png', {
-	    minZoom: 2,
-	    maxZoom: 6,
-	    attribution: 'Aequitas Black Desert Map',
-	    tms: true,
-	    continuousWorld: true,
-	    noWarp: true
-	}));
 	
 	var addEntity = function(index, entity) {
-=======
-	L.tileLayer('http://aequitas.lostportals.com/map/{z}/{x}/{y}.png', {
-		minZoom: 2,
-		maxZoom: 6,
-		attribution: 'Aequitas Black Desert Map',
-		tms: true,
-		continuousWorld: true,
-		noWarp: true
-	}).addTo(map);
-
-	var mapLayers = [];
-	$($scope.entities).each(function() {
-		var entity = this;
->>>>>>> 2bd400d63b0edea0115ec814b261499683a32bb2
 		$(entity.markers).each(function() {
 			var marker = this;
 			var mapMarker = L.marker([marker.latitude, marker.longitude], { icon: new LeafIcon({ iconUrl: marker.icon.url }) });
@@ -106,6 +84,15 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 		});
 	};
 
+	L.tileLayer('http://aequitas.lostportals.com/map/{z}/{x}/{y}.png', {
+		minZoom: 2,
+		maxZoom: 6,
+		attribution: 'Aequitas Black Desert Map',
+		tms: true,
+		continuousWorld: true,
+		noWarp: true
+	}).addTo(map);
+
 	var mapLayers = [];
 	$($scope.entities).each(addEntity);
 	map.mapLayers = mapLayers;
@@ -114,7 +101,6 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 		mapLayersMap.set(this.entity.id, this);
 	});
 	map.mapLayersMap = mapLayersMap;
-<<<<<<< HEAD
 
 	/* Draw Controls */
 	var drawnItems = new L.FeatureGroup().addTo(map);
@@ -171,44 +157,14 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 	    entity.$save({'ajaxId':'saveEntity'}, function(savedEntity) {
 	    	addEntity(0, savedEntity);
 	    });
+
 	    //sidebar.open('info');
-
-	    // Do whatever else you need to. (save to db, add to map etc)
-	    map.addLayer(layer);
-=======
-	
-	/* Drawing Controls */
-	drawnItems = new L.FeatureGroup().addTo(map);
-
-	drawControl = new L.Control.Draw({
-		 position: 'topleft',
-		 draw: {
-			  polyline: false,
-			  polygon: { 
-					allowIntersection: false
-			  },
-			  circle: false,
-			  rectangle: false
-		 },
-		 edit: {
-			  featureGroup: drawnItems
-		 }
-	}).addTo(map);
-
-	map.on('draw:created', function (e) {
-		 // Save to spreadsheet
-		 drawnItems.addLayer(e.layer);
->>>>>>> 2bd400d63b0edea0115ec814b261499683a32bb2
 	});
 });
 
 controllerApp.controller('SidebarController', function($scope) {
 	sidebar = L.control.sidebar('sidebar', {
-<<<<<<< HEAD
-		position: "right"
-=======
 		position: 'right'
->>>>>>> 2bd400d63b0edea0115ec814b261499683a32bb2
 	}).addTo(map);
 
 	/* Hide other sidebar items and show the clicked coordinates */
@@ -318,124 +274,4 @@ controllerApp.controller('SidebarController', function($scope) {
 			characterDataOldValue: false
 		});
 	}, 1000);
-<<<<<<< HEAD
 });
-=======
-});
-	
-//	angularApp.controller("SearchController", function($scope) {
-//		var createMarker = function(sheetId, sheetName, icon, row) {
-//		    var aMarker = L.marker([row.lat, row.lon], { icon: BDO.icons.get(icon) });
-//		    aMarker.type = sheetId;
-//		    var headerText = sheetName.charAt(sheetName.length - 1) == 's' ? sheetName.substring(0, sheetName.length - 1) : sheetName;
-//		    var popupHeader = $('<div class="popup-header">' + row.name + '</div>');
-//		    var popupData = $('<div class="popup-data"></div>');
-//		    if (row.popupNotes) {
-//		        var data = row.popupNotes.split(',');
-//		        if (data) {
-//		            popupHeader.attr('style', 'border-bottom: 1px solid black; margin-bottom: 5px;');
-//		            popupData.text(data);
-//		        }
-//		    }
-//		    var popup = $('<div class="popup"></div>');
-//		    popup.append(popupHeader);
-//		    popup.append(popupData);
-//		    aMarker.bindPopup(popup.html());
-//		    var showInfoForMarker = function() {
-//		        hideInfoDivs();
-//		        $("#info .sidebar-header").children().first().text(headerText);
-//		        $("#info-node .node-name").text(row.name);
-//		        $("#info-node .node-notes").text(row.notes);
-//		        $("#info-node .node-coordinates").text("[" + row.lat + ", " + row.lon + "]");
-//		        $("#info-node .node-img").html((!row.screenshot || row.screenshot == "") ? "" : '<a href="' + row.screenshot + '"><img src="' + row.screenshot + '" width="300px"></img></a>');
-//		        $("#info-node").removeClass("hidden");
-//		        BDO.sidebar.open("info");
-//		    };
-//		    $(aMarker).click(showInfoForMarker);
-//		    $(aMarker).hover(function() { this.openPopup(); } , function(){this.closePopup();} );
-//		    aMarker.name = row.name;
-//		    aMarker.show = showInfoForMarker;
-//		    aMarker.row = row;
-//		    BDO.addMarker(aMarker);
-//		}
-//	
-//		var addSidebarFor = function(configRow) {
-//		    var sheetName = configRow.name;
-//		    var sheetId = configRow.id;
-//	
-//		    var sidebarP = $('<p></p>');
-//		    sidebarP.text(sheetName);
-//		    var sidebarDiv = $('<div></div>');
-//		    var id = 'layer-' + sheetId;
-//		    sidebarDiv.attr('id', id);
-//		    sidebarDiv.addClass('sidebar-layer');
-//		    sidebarDiv.addClass('active');
-//		    sidebarDiv.click(function() {
-//		        var sidebarActive = $('#' + id).hasClass('active');
-//		        for (var layerMapObj of BDO.dynamicLayers) {
-//		            var layer = layerMapObj[1];
-//		            if (layer.type == sheetId) {
-//		                if (sidebarActive) BDO.map.removeLayer(layer);
-//		                else BDO.map.addLayer(layer);
-//		            }
-//		        }
-//		        if (sidebarActive) {
-//		            sidebarDiv.removeClass('active');
-//		            sidebarDiv.addClass('inactive');
-//		        } else {
-//		            sidebarDiv.removeClass('inactive');
-//		            sidebarDiv.addClass('active');
-//		        }
-//		    });
-//		    $("#layer-content").append(sidebarDiv);
-//		    var icon = BDO.icons.get(configRow.marker);
-//		    if (icon) {
-//		        var sidebarImg = $('<img></img>');
-//		        sidebarImg.attr('src', icon.options.iconUrl);
-//		        sidebarDiv.append(sidebarImg);
-//		    }
-//		    var circleColor = configRow.circle;
-//		    if (circleColor) {
-//		        var sidebarCircle = $('<span>&nbsp;</span>');
-//		        sidebarCircle.attr('class', 'circle');
-//		        sidebarCircle.attr('style', 'background: ' + circleColor);
-//		        sidebarDiv.append(sidebarCircle);
-//		    }
-//		    var polygonColor = configRow.polygon;
-//		    if (polygonColor) {
-//		        var sidebarCircle = $('<span>&nbsp;</span>');
-//		        sidebarCircle.attr('class', 'polygon');
-//		        sidebarCircle.attr('style', 'background: ' + polygonColor + '; border: solid ' + polygonColor + '1px');
-//		        sidebarDiv.append(sidebarCircle);
-//		    }
-//		    sidebarDiv.append(sidebarP);
-//		}
-//	
-//		$scope.loadPointsOfInterest = function() {
-//			for (var layerMapObj of BDO.dynamicLayers) {
-//				var layer = layerMapObj[1];
-//				$scope.pointsOfInterest.push(layer);
-//			}
-//			$scope.$apply()
-//		};
-//	
-//		var observer = new MutationObserver(function(mutations) {
-//		  for (var mutation of mutations) {
-//		    for (var i = 0; i < mutation.addedNodes.length; i++) {
-//		    	var id = parseInt($(mutation.addedNodes[i]).attr('id'));
-//		    	if (id) {
-//		    		BDO.map.addLayer(BDO.dynamicLayers.get(id));
-//				}
-//		    }
-//		    for (var i = 0; i < mutation.removedNodes.length; i++) {
-//		    	var id = parseInt($(mutation.removedNodes[i]).attr('id'));
-//		    	if (id) {
-//		    		BDO.map.removeLayer(BDO.dynamicLayers.get(id));
-//		    	}
-//		    }
-//		  };
-//		});
-//	
-//		observer.observe(document.getElementById("search-list"), {childList: true, attributes: false, characterData: false, subtree: false, attributeOldValue: false, characterDataOldValue: false});
-//	 });
->>>>>>> 2bd400d63b0edea0115ec814b261499683a32bb2
