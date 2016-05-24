@@ -18,6 +18,11 @@ controllerApp.controller('AppController', function($scope, EntityService, TypeSe
 	TypeService.query({'ajaxId':'types'}, function(data) {
 		$scope.types = data;
 	});
+
+	$scope.icons = [];	
+	TypeService.query({'ajaxId':'icons'}, function(data) {
+		$scope.icons = data;
+	});
 });
 
 controllerApp.controller('MapController', function($scope, EntityService) {
@@ -110,41 +115,20 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 //	    }
 	}).addTo(map);
 	map.on('draw:created', function (e) {
+		sidebar.close('info');
 	    var type = e.layerType;
 	    var layer = e.layer;
 
 	    var entity = new EntityService();
-	    entity.title = 'New Entity';
+	    entity.title = '';
 	    entity.types = [];
 	    entity.circles = [];
 	    entity.markers = [];
 	    entity.polygons = [];
 	    entity.notes = [];
 	    entity.images = [];
-
-	    if (type === 'marker') {
-	        var marker = {};
-	        marker.latitude = layer._latlng.lat;
-	        marker.longitude = layer._latlng.lng;
-	        marker.iconId = ''; // TODO - IconId
-	        entity.markers.push(marker);
-	    } else if (type === 'circle') {
-	    	var circle = {};
-	    	circle.latitude = layer._latlng.lat;
-	    	circle.longitude = layer._latlng.lng;
-	    	circle.radius = 11000;
-	    	circle.outlineColor = 'red';
-	    	circle.fillColor = 'red';
-	    	entity.circles.push(circle);
-	    } else if (type === 'polygon') {
-	    	var polygon = {};
-	    	polygon.vertices = _layer.latlngs;
-	    	polygon.outlineColor = 'green';
-	    	polygon.fillColor = 'green';
-	    	entity.polygons.push(polygon);
-	    } else {
-	    	// ??
-	    }
+	    
+	    $scope.activeEntity = entity;
 	    
 	    var note = {};
 	    note.note = 'A note!';
@@ -153,12 +137,46 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 	    var img = {};
 	    img.url = 'http://url.url/url.jpg';
 	    entity.images.push(img);
+	    
+	    $scope.saveEntity = function(entityToSave) {
+	    	console.log(entityToSave);
+	    	entityToSave.$save({'ajaxId':'saveEntity'}, function(savedEntity) {
+		    	addEntity(0, savedEntity);
+		    });
+		    $scope.closeModal();
+	    }
+	    
+	    $scope.closeModal = function() {
+	    	$scope.saveEntity = null;
+	    	$scope.closeModal = null;
+	    }
 
-	    entity.$save({'ajaxId':'saveEntity'}, function(savedEntity) {
-	    	addEntity(0, savedEntity);
-	    });
-
-	    //sidebar.open('info');
+	    if (type === 'marker') {
+	        var marker = {};
+	        marker.latitude = layer._latlng.lat;
+	        marker.longitude = layer._latlng.lng;
+	        entity.markers.push(marker);
+	        $('#markerModal').modal('show');
+	    } else if (type === 'circle') {
+	    	var circle = {};
+	    	circle.latitude = layer._latlng.lat;
+	    	circle.longitude = layer._latlng.lng;
+	    	circle.radius = 11000;
+	    	circle.outlineColor = 'red';
+	    	circle.fillColor = 'red';
+	    	entity.circles.push(circle);
+	    	$('#circleModal').modal('show');
+	    } else if (type === 'polygon') {
+	    	var polygon = {};
+	    	polygon.vertices = _layer.latlngs;
+	    	polygon.outlineColor = 'green';
+	    	polygon.fillColor = 'green';
+	    	entity.polygons.push(polygon);
+	    	$('#polygonModal').modal('show');
+	    } else {
+	    	// ??
+	    }
+	    $scope.$apply();
 	});
 });
 

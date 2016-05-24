@@ -126,3 +126,19 @@ body,
     width: 300px;
     border: 1px solid #444444;
 }
+
+#markerModal .modal-body table {
+	width: 100%;
+}
+
+#markerModal .modal-body table td {
+	padding-bottom: 0.5em;
+}
+
+#markerModal .modal-body table td label {
+	margin-right: 1em;
+}
+
+#markerModal .modal-body textarea {
+  resize: vertical;
+}

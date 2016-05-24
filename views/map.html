@@ -60,3 +60,74 @@
         </div>
     </div>
 </div>
+<div id="markerModal" class="modal fade" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">Create Marker</h4>
+			</div>
+			<div class="modal-body">
+				<table>
+					<tbody>
+						<tr>
+							<td><label for="markerTitle">Title</label></td>
+							<td><input id="markerTitle" type="text" maxlength="50" ng-value="activeEntity.title" /></td>
+						</tr>
+						<tr>
+							<td><label for="markerType">Icon Type</label></td>
+							<td><select id="markerType" name="markerType" ng-model="activeEntity.markers[0].icon">
+									<option ng-repeat="i in icons" ng-value="i">{{i.name}}</option>
+							</select></td>
+						</tr>
+						<tr>
+							<td><label for="markerLatitude">Latitude</label></td>
+							<td><input id="markerLatitude" type="text" maxlength="50" ng-value="activeEntity.markers[0].latitude" /></td>
+						</tr>
+						<tr>
+							<td><label for="markerLongitude">Longitude</label></td>
+							<td><input id="markerLongitude" type="text" maxlength="50" ng-value="activeEntity.markers[0].longitude" /></td>
+						</tr>
+						<tr>
+							<td><label for="markerNotes">Notes</label></td>
+							<td><input type="button" value="Add" /></td>
+						</tr>
+						<tr>
+							<td></td>
+							<td>
+								<table id="markerNotes">
+									<tbody>
+										<tr ng-repeat="n in activeEntity.notes">
+											<td><textarea ng-id="n.id" rows="2" cols="50">{{n.note}}</textarea></td>
+											<td><input type="button" value="Remove" /></td>
+										</tr>
+									</tbody>
+								</table>							
+							</td>
+						</tr>
+						<tr>
+							<td><label for="markerImages">Images</label></td>
+							<td><input type="button" value="Add" /></td>
+						</tr>
+						<tr>
+							<td></td>
+							<td>
+								<table id="markerImages">
+									<tbody>
+										<tr ng-repeat="i in activeEntity.images">
+											<td><input ng-id="i.id" type="text" ng-value="i.url" /></td>
+											<td><input type="button" value="Remove" /></td>
+										</tr>
+									</tbody>
+								</table>							
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal" ng-click="saveEntity(activeEntity)">Save</button>
+				<button type="button" class="btn btn-default" data-dismiss="modal" ng-click="closeModal()">Close</button>
+			</div>
+		</div>
+	</div>
+</div>

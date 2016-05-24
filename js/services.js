@@ -9,3 +9,7 @@ servicesApp.factory('EntityService', function($resource) {
 servicesApp.factory('TypeService', function($resource) {
 	return $resource(API_ENDPOINT + '/mapEntityTypes');
 });
+
+servicesApp.factory('IconService', function($resource) {
+	return $resource(API_ENDPOINT + '/mapIcons');
+});
