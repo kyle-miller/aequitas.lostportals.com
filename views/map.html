@@ -16,10 +16,9 @@
     <!-- Tab panes -->
     <div class="sidebar-content">
     	<div class="sidebar-pane" id="info">
-            <h1 class="sidebar-header"><span>Info</span><span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+            <h1 class="sidebar-header"><span>Info</span><span class="sidebar-close"><i class="fa fa-caret-right"></i></span></h1>
             <div id="info-coordinates" class="hidden"><p class="coord-data"></p></div>
             <div id="info-node" class="hidden">
-            	<h2 class="node-name"></h2>
             	<p class="node-coordinates"></p>
             	<p class="node-notes"></p>
             	<div class="node-img"></div>
@@ -27,7 +26,7 @@
            	</div>
         </div>
         <div class="sidebar-pane" id="layers">
-            <h1 class="sidebar-header"><span>Hide/Show Layers</span><span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+            <h1 class="sidebar-header"><span>Hide/Show Layers</span><span class="sidebar-close"><i class="fa fa-caret-right"></i></span></h1>
             <div id="layer-content" class="sidebar-layers">
                 <div id="layer-all" class="sidebar-layer active"><p>All Layers</p></div>
             </div>
@@ -36,7 +35,7 @@
             <h1 class="sidebar-header">
                 <span>Search</span>
                 <input type="search" ng-model="s" id="searchFilter" class="search-query form-control" />
-                <span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+                <span class="sidebar-close"><i class="fa fa-caret-right"></i></span>
             </h1>
             <div id="search-content" class="sidebar-search-results">
                 <ul id="search-list" class="search-list">
@@ -60,7 +59,7 @@
         </div>
     </div>
 </div>
-<div id="markerModal" class="modal fade" role="dialog">
+<div id="markerModal" class="modal fade map-modal" role="dialog">
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -71,51 +70,170 @@
 					<tbody>
 						<tr>
 							<td><label for="markerTitle">Title</label></td>
-							<td><input id="markerTitle" type="text" maxlength="50" ng-value="activeEntity.title" /></td>
-						</tr>
-						<tr>
-							<td><label for="markerType">Icon Type</label></td>
-							<td><select id="markerType" name="markerType" ng-model="activeEntity.markers[0].icon">
-									<option ng-repeat="i in icons" ng-value="i">{{i.name}}</option>
-							</select></td>
+							<td><input id="markerTitle" type="text" size="50" maxlength="50" ng-model="activeEntity.title" /></td>
 						</tr>
 						<tr>
 							<td><label for="markerLatitude">Latitude</label></td>
-							<td><input id="markerLatitude" type="text" maxlength="50" ng-value="activeEntity.markers[0].latitude" /></td>
+							<td><input id="markerLatitude" type="text" size="50" maxlength="50" ng-model="activeEntity.markers[0].latitude" /></td>
 						</tr>
 						<tr>
 							<td><label for="markerLongitude">Longitude</label></td>
-							<td><input id="markerLongitude" type="text" maxlength="50" ng-value="activeEntity.markers[0].longitude" /></td>
+							<td><input id="markerLongitude" type="text" size="50" maxlength="50" ng-model="activeEntity.markers[0].longitude" /></td>
 						</tr>
 						<tr>
-							<td><label for="markerNotes">Notes</label></td>
-							<td><input type="button" value="Add" /></td>
+							<td><label for="markerType">Icon Type</label></td>
+							<td><select id="markerType" name="markerType" ng-options="i.name for i in icons" ng-model="activeEntity.markers[0].icon"></select></td>
 						</tr>
 						<tr>
-							<td></td>
+							<td><label for="markerNotes">Notes</label><span><i class="fa fa-plus-circle" ng-click="activeEntity.addNote()"></i></span></td>
 							<td>
 								<table id="markerNotes">
 									<tbody>
-										<tr ng-repeat="n in activeEntity.notes">
-											<td><textarea ng-id="n.id" rows="2" cols="50">{{n.note}}</textarea></td>
-											<td><input type="button" value="Remove" /></td>
+										<tr ng-repeat="n in activeEntity.notes track by $index">
+											<td><textarea ng-id="n.id" rows="2" cols="50" ng-model="n.note"></textarea></td>
+											<td><span><i class="fa fa-times-circle" ng-click="activeEntity.removeNote($index)"></i></span></td>
+										</tr>
+									</tbody>
+								</table>
+							</td>
+						</tr>
+						<tr>
+							<td><label for="markerImages">Images</label><span><i class="fa fa-plus-circle" ng-click="activeEntity.addImage()"></i></span></td>
+							<td>
+								<table id="markerImages">
+									<tbody>
+										<tr ng-repeat="i in activeEntity.images track by $index">
+											<td><input ng-id="i.id" type="text" size="50" ng-model="i.url" /></td>
+											<td><span><i class="fa fa-times-circle" ng-click="activeEntity.removeImage($index)"></i></span></td>
+										</tr>
+									</tbody>
+								</table>							
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal" ng-click="saveEntity(activeEntity)">Save</button>
+				<button type="button" class="btn btn-default" data-dismiss="modal" ng-click="closeModal()">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="circleModal" class="modal fade map-modal" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">Create Circle</h4>
+			</div>
+			<div class="modal-body">
+				<table>
+					<tbody>
+						<tr>
+							<td><label for="circleTitle">Title</label></td>
+							<td><input id="circleTitle" type="text" maxlength="50" ng-model="activeEntity.title" /></td>
+						</tr>
+						<tr>
+							<td><label for="circleLatitude">Latitude</label></td>
+							<td><input id="circleLatitude" type="text" maxlength="50" ng-model="activeEntity.circles[0].latitude" /></td>
+						</tr>
+						<tr>
+							<td><label for="circleLongitude">Longitude</label></td>
+							<td><input id="circleLongitude" type="text" maxlength="50" ng-model="activeEntity.circles[0].longitude" /></td>
+						</tr>
+						<tr>
+							<td><label for="circleRadius">Radius</label></td>
+							<td><input id="circleRadius" type="text" ng-model="activeEntity.circles[0].radius" /></td>
+						</tr>
+						<tr>
+							<td><label for="circleOutlineColor">Outline Color</label></td>
+							<td><input id="circleOutlineColor" type="text" maxlength="50" ng-model="activeEntity.circles[0].outlineColor" /></td>
+						</tr>
+						<tr>
+							<td><label for="circleOutlineColor">Fill Color</label></td>
+							<td><input id="circleOutlineColor" type="text" maxlength="50" ng-model="activeEntity.circles[0].fillColor" /></td>
+						</tr>
+						<tr>
+							<td><label for="circleNotes">Notes</label><span><i class="fa fa-plus-circle" ng-click="activeEntity.addNote()"></i></span></td>
+							<td>
+								<table id="circleNotes">
+									<tbody>
+										<tr ng-repeat="n in activeEntity.notes track by $index">
+											<td><textarea ng-id="n.id" rows="2" cols="50" ng-model="n.note"></textarea></td>
+											<td><span><i class="fa fa-times-circle" ng-click="activeEntity.removeNote($index)"></i></span></td>
 										</tr>
 									</tbody>
 								</table>							
 							</td>
 						</tr>
 						<tr>
-							<td><label for="markerImages">Images</label></td>
-							<td><input type="button" value="Add" /></td>
+							<td><label for="circleImages">Images</label><span><i class="fa fa-plus-circle" ng-click="activeEntity.addImage()"></i></span></td>
+							<td>
+								<table id="circleImages">
+									<tbody>
+										<tr ng-repeat="i in activeEntity.images track by $index">
+											<td><input ng-id="i.id" type="text" ng-model="i.url" /></td>
+											<td><span><i class="fa fa-times-circle" ng-click="activeEntity.removeImage($index)"></i></span></td>
+										</tr>
+									</tbody>
+								</table>							
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal" ng-click="saveEntity(activeEntity)">Save</button>
+				<button type="button" class="btn btn-default" data-dismiss="modal" ng-click="closeModal()">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="polygonModal" class="modal fade map-modal" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">Create Circle</h4>
+			</div>
+			<div class="modal-body">
+				<table>
+					<tbody>
+						<tr>
+							<td><label for="polygonTitle">Title</label></td>
+							<td><input id="polygonTitle" type="text" maxlength="50" ng-model="activeEntity.title" /></td>
 						</tr>
 						<tr>
-							<td></td>
-							<td>
-								<table id="markerImages">
+							<td><label for="polygonLatitude">Vertices</label></td>
+							<td><textarea id="polygonLatitude" rows="5" cols="50" ng-model="activeEntity.polygons[0].vertices"></textarea></td>
+						</tr>
+						<tr>
+							<td><label for="polygonOutlineColor">Outline Color</label></td>
+							<td><input id="polygonOutlineColor" type="text" maxlength="50" ng-model="activeEntity.polygons[0].outlineColor" /></td>
+						</tr>
+						<tr>
+							<td><label for="polygonOutlineColor">Fill Color</label></td>
+							<td><input id="polygonOutlineColor" type="text" maxlength="50" ng-model="activeEntity.polygons[0].fillColor" /></td>
+						</tr>
+						<tr>
+							<td><label for="polygonNotes">Notes</label><span><i class="fa fa-plus-circle" ng-click="activeEntity.addNote()"></i></span></td><td>
+								<table id="polygonNotes">
 									<tbody>
-										<tr ng-repeat="i in activeEntity.images">
-											<td><input ng-id="i.id" type="text" ng-value="i.url" /></td>
-											<td><input type="button" value="Remove" /></td>
+										<tr ng-repeat="n in activeEntity.notes track by $index">
+											<td><textarea ng-id="n.id" rows="2" cols="50" ng-model="n.note"></textarea></td>
+											<td><span><i class="fa fa-times-circle" ng-click="activeEntity.removeNote($index)"></i></span></td>
+										</tr>
+									</tbody>
+								</table>							
+							</td>
+						</tr>
+						<tr>
+							<td><label for="polygonImages">Images</label><span><i class="fa fa-plus-circle" ng-click="activeEntity.addImage()"></i></span></td>
+							<td>
+								<table id="polygonImages">
+									<tbody>
+										<tr ng-repeat="i in activeEntity.images track by $index">
+											<td><input ng-id="i.id" type="text" maxlength="500" ng-model="i.url" /></td>
+											<td><span><i class="fa fa-times-circle" ng-click="activeEntity.removeImage($index)"></i></span></td>
 										</tr>
 									</tbody>
 								</table>							

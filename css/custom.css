@@ -21,6 +21,11 @@ body,
 
 .sidebar-header {
 	border-bottom: 1px solid #8080A0;
+	margin-bottom: .3em;
+}
+
+.sidebar-header span {
+	float: left;
 }
 
 .sidebar-tabs,
@@ -88,12 +93,13 @@ body,
 }
 
 #searchFilter {
-    margin-left: 15px;
-    padding:8px 15px;
+    margin: 2px auto auto 15px;
+    padding:3px 15px;
     background:rgba(50, 50, 50, 0.2);
-    border:0px solid #dbdbdb;
     color: white;
     border: 1px solid #375484;
+    float: left;
+    width: 70%;
 }
 
 .search-list {
@@ -127,18 +133,22 @@ body,
     border: 1px solid #444444;
 }
 
-#markerModal .modal-body table {
+.map-modal .modal-body table {
 	width: 100%;
 }
 
-#markerModal .modal-body table td {
+.map-modal .modal-body table td {
 	padding-bottom: 0.5em;
 }
 
-#markerModal .modal-body table td label {
+.map-modal .modal-body table td label {
 	margin-right: 1em;
 }
 
-#markerModal .modal-body textarea {
-  resize: vertical;
+.map-modal .modal-body textarea {
+	resize: vertical;
+}
+
+.map-modal .modal-body table span i {
+	cursor: pointer;
 }
