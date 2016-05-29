@@ -1,4 +1,4 @@
-API_ENDPOINT = "http://localhost:8080/api";
+API_ENDPOINT = "http://aequitas.lostportals.com/api";
 
 var servicesApp = angular.module('bdoApp.services', ['ngResource']);
 

@@ -70,23 +70,23 @@
 					<tbody>
 						<tr>
 							<td><label for="markerTitle">Title</label></td>
-							<td><input id="markerTitle" type="text" size="50" maxlength="50" ng-model="activeEntity.title" /></td>
+							<td><input id="markerTitle" type="text" class="form-control" size="50" maxlength="50" ng-model="activeEntity.title" /></td>
 						</tr>
 						<tr>
 							<td><label for="markerTypes">Type</label></td>
-							<td><select id="markerTypes" name="markerTypes" ng-options="t as t.name for t in types" ng-model="activeEntity.types[0]"></select></td>
+							<td><select id="markerTypes" name="markerTypes" class="form-control" ng-options="t as t.name for t in types" ng-model="activeEntity.types[0]"></select></td>
 						</tr>
 						<tr>
 							<td><label for="markerLatitude">Latitude</label></td>
-							<td><input id="markerLatitude" type="text" size="50" maxlength="50" ng-model="activeEntity.markers[0].latitude" /></td>
+							<td><input id="markerLatitude" type="text" class="form-control" size="50" maxlength="50" ng-model="activeEntity.markers[0].latitude" /></td>
 						</tr>
 						<tr>
 							<td><label for="markerLongitude">Longitude</label></td>
-							<td><input id="markerLongitude" type="text" size="50" maxlength="50" ng-model="activeEntity.markers[0].longitude" /></td>
+							<td><input id="markerLongitude" type="text" class="form-control" size="50" maxlength="50" ng-model="activeEntity.markers[0].longitude" /></td>
 						</tr>
 						<tr>
 							<td><label for="markerIcon">Icon</label></td>
-							<td><select id="markerIcon" name="markerIcon" ng-options="i as i.name for i in icons" ng-model="activeEntity.markers[0].icon"></select></td>
+							<td><select id="markerIcon" name="markerIcon" class="form-control" ng-options="i as i.name for i in icons" ng-model="activeEntity.markers[0].icon"></select></td>
 						</tr>
 						<tr>
 							<td><label for="markerNotes">Notes</label><span><i class="fa fa-plus-circle" ng-click="activeEntity.addNote()"></i></span></td>
@@ -94,7 +94,7 @@
 								<table id="markerNotes">
 									<tbody>
 										<tr ng-repeat="n in activeEntity.notes track by $index">
-											<td><textarea ng-id="n.id" rows="2" cols="50" ng-model="n.note"></textarea></td>
+											<td><textarea ng-id="n.id" class="form-control" rows="2" cols="50" ng-model="n.note"></textarea></td>
 											<td><span><i class="fa fa-times-circle" ng-click="activeEntity.removeNote($index)"></i></span></td>
 										</tr>
 									</tbody>
@@ -107,7 +107,7 @@
 								<table id="markerImages">
 									<tbody>
 										<tr ng-repeat="i in activeEntity.images track by $index">
-											<td><input ng-id="i.id" type="text" size="50" ng-model="i.url" /></td>
+											<td><input ng-id="i.id" type="text" class="form-control" size="50" ng-model="i.url" /></td>
 											<td><span><i class="fa fa-times-circle" ng-click="activeEntity.removeImage($index)"></i></span></td>
 										</tr>
 									</tbody>
@@ -135,31 +135,31 @@
 					<tbody>
 						<tr>
 							<td><label for="circleTitle">Title</label></td>
-							<td><input id="circleTitle" type="text" maxlength="50" ng-model="activeEntity.title" /></td>
+							<td><input id="circleTitle" type="text" class="form-control" maxlength="50" ng-model="activeEntity.title" /></td>
 						</tr>
 						<tr>
 							<td><label for="circleTypes">Type</label></td>
-							<td><select id="circleTypes" name="circleTypes" ng-options="t as t.name for t in types" ng-model="activeEntity.types[0]"></select></td>
+							<td><select id="circleTypes" name="circleTypes" class="form-control" ng-options="t as t.name for t in types" ng-model="activeEntity.types[0]"></select></td>
 						</tr>
 						<tr>
 							<td><label for="circleLatitude">Latitude</label></td>
-							<td><input id="circleLatitude" type="text" maxlength="50" ng-model="activeEntity.circles[0].latitude" /></td>
+							<td><input id="circleLatitude" type="text" class="form-control" maxlength="50" ng-model="activeEntity.circles[0].latitude" /></td>
 						</tr>
 						<tr>
 							<td><label for="circleLongitude">Longitude</label></td>
-							<td><input id="circleLongitude" type="text" maxlength="50" ng-model="activeEntity.circles[0].longitude" /></td>
+							<td><input id="circleLongitude" type="text" class="form-control" maxlength="50" ng-model="activeEntity.circles[0].longitude" /></td>
 						</tr>
 						<tr>
 							<td><label for="circleRadius">Radius</label></td>
-							<td><input id="circleRadius" type="text" ng-model="activeEntity.circles[0].radius" /></td>
+							<td><input id="circleRadius" type="text" class="form-control" maxlength="12" ng-model="activeEntity.circles[0].radius" /></td>
 						</tr>
 						<tr>
 							<td><label for="circleOutlineColor">Outline Color</label></td>
-							<td><input id="circleOutlineColor" type="text" maxlength="50" ng-model="activeEntity.circles[0].outlineColor" /></td>
+							<td><input id="circleOutlineColor" type="text" class="pick-a-color form-control" maxlength="50" ng-model="activeEntity.circles[0].outlineColor" /></td>
 						</tr>
 						<tr>
 							<td><label for="circleOutlineColor">Fill Color</label></td>
-							<td><input id="circleOutlineColor" type="text" maxlength="50" ng-model="activeEntity.circles[0].fillColor" /></td>
+							<td><input id="circleOutlineColor" type="text" class="pick-a-color form-control" maxlength="50" ng-model="activeEntity.circles[0].fillColor" /></td>
 						</tr>
 						<tr>
 							<td><label for="circleNotes">Notes</label><span><i class="fa fa-plus-circle" ng-click="activeEntity.addNote()"></i></span></td>
@@ -167,7 +167,7 @@
 								<table id="circleNotes">
 									<tbody>
 										<tr ng-repeat="n in activeEntity.notes track by $index">
-											<td><textarea ng-id="n.id" rows="2" cols="50" ng-model="n.note"></textarea></td>
+											<td><textarea ng-id="n.id" class="form-control" rows="2" cols="50" ng-model="n.note"></textarea></td>
 											<td><span><i class="fa fa-times-circle" ng-click="activeEntity.removeNote($index)"></i></span></td>
 										</tr>
 									</tbody>
@@ -180,7 +180,7 @@
 								<table id="circleImages">
 									<tbody>
 										<tr ng-repeat="i in activeEntity.images track by $index">
-											<td><input ng-id="i.id" type="text" ng-model="i.url" /></td>
+											<td><input ng-id="i.id" type="text" class="form-control" ng-model="i.url" /></td>
 											<td><span><i class="fa fa-times-circle" ng-click="activeEntity.removeImage($index)"></i></span></td>
 										</tr>
 									</tbody>
@@ -208,30 +208,30 @@
 					<tbody>
 						<tr>
 							<td><label for="polygonTitle">Title</label></td>
-							<td><input id="polygonTitle" type="text" maxlength="50" ng-model="activeEntity.title" /></td>
+							<td><input id="polygonTitle" type="text" class="form-control" maxlength="50" ng-model="activeEntity.title" /></td>
 						</tr>
 						<tr>
 							<td><label for="polygonTypes">Type</label></td>
-							<td><select id="polygonTypes" name="polygonTypes" ng-options="t as t.name for t in types" ng-model="activeEntity.types[0]"></select></td>
+							<td><select id="polygonTypes" name="polygonTypes" class="form-control" ng-options="t as t.name for t in types" ng-model="activeEntity.types[0]"></select></td>
 						</tr>
 						<tr>
 							<td><label for="polygonLatitude">Vertices</label></td>
-							<td><textarea id="polygonLatitude" rows="5" cols="50" ng-model="activeEntity.polygons[0].vertices"></textarea></td>
+							<td><textarea id="polygonLatitude" class="form-control" rows="5" cols="50" ng-model="activeEntity.polygons[0].vertices"></textarea></td>
 						</tr>
 						<tr>
 							<td><label for="polygonOutlineColor">Outline Color</label></td>
-							<td><input id="polygonOutlineColor" type="text" maxlength="50" ng-model="activeEntity.polygons[0].outlineColor" /></td>
+							<td><input id="polygonOutlineColor" type="text" class="pick-a-color form-control" maxlength="50" ng-model="activeEntity.polygons[0].outlineColor" /></td>
 						</tr>
 						<tr>
 							<td><label for="polygonOutlineColor">Fill Color</label></td>
-							<td><input id="polygonOutlineColor" type="text" maxlength="50" ng-model="activeEntity.polygons[0].fillColor" /></td>
+							<td><input id="polygonOutlineColor" type="text" class="pick-a-color form-control" maxlength="50" ng-model="activeEntity.polygons[0].fillColor" /></td>
 						</tr>
 						<tr>
 							<td><label for="polygonNotes">Notes</label><span><i class="fa fa-plus-circle" ng-click="activeEntity.addNote()"></i></span></td><td>
 								<table id="polygonNotes">
 									<tbody>
 										<tr ng-repeat="n in activeEntity.notes track by $index">
-											<td><textarea ng-id="n.id" rows="2" cols="50" ng-model="n.note"></textarea></td>
+											<td><textarea ng-id="n.id" class="form-control" rows="2" cols="50" ng-model="n.note"></textarea></td>
 											<td><span><i class="fa fa-times-circle" ng-click="activeEntity.removeNote($index)"></i></span></td>
 										</tr>
 									</tbody>
@@ -244,7 +244,7 @@
 								<table id="polygonImages">
 									<tbody>
 										<tr ng-repeat="i in activeEntity.images track by $index">
-											<td><input ng-id="i.id" type="text" maxlength="500" ng-model="i.url" /></td>
+											<td><input ng-id="i.id" type="text" class="form-control" maxlength="500" ng-model="i.url" /></td>
 											<td><span><i class="fa fa-times-circle" ng-click="activeEntity.removeImage($index)"></i></span></td>
 										</tr>
 									</tbody>

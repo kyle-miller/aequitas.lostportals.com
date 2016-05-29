@@ -6,33 +6,40 @@ controllerApp.config(function($httpProvider) {
 	$httpProvider.defaults.headers.put = {};
 	$httpProvider.defaults.headers.patch = {};
 	$httpProvider.defaults.headers.common['Content-Type'] = 'application/json';
-}); // TODO
+});
 
-controllerApp.controller('AppController', function($scope, EntityService, TypeService) {
-	$scope.entities = [];	
+controllerApp.controller('AppController', function($scope, EntityService, TypeService, IconService) {
+	$scope.entitiesLoaded = false;
+	$scope.typesLoaded = false;
+	$scope.iconsLoaded = false;
+	$scope.entitiesAddedToMap = false;
+	$scope.entityObserverAdded = false;
+	$scope.entitiesOnClickLoaded = false;
+
+	$scope.entities = [];
 	EntityService.query({'ajaxId':'entities'}, function(data) {
 		$scope.entities = data;
+		$scope.entitiesLoaded = true;
 	});
 
 	$scope.types = [];	
 	TypeService.query({'ajaxId':'types'}, function(data) {
 		$scope.types = data;
+		$scope.typesLoaded = true;
 	});
 
-	$scope.icons = [];	
-	TypeService.query({'ajaxId':'icons'}, function(data) {
+	$scope.icons = [];
+	$scope.iconMap = new Map();
+	IconService.query({'ajaxId':'icons'}, function(data) {
 		$scope.icons = data;
+		$scope.icons.forEach(function(i) {
+			$scope.iconMap.set(i.name, i);
+			$scope.iconsLoaded = true;
+		});
 	});
 });
 
 controllerApp.controller('MapController', function($scope, EntityService) {
-	$scope.defaultIcon = L.Icon.extend({
-		options: {
-			iconSize: [25, 41],
-	        iconAnchor: [12, 45],
-	        popupAnchor: [-12, -45]
-		}
-	});
 	$scope.LeafIcon = L.Icon.extend({
 		options: {
 			iconSize: [47, 37],
@@ -66,13 +73,13 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 		$(entity.markers).each(function() {
 			try {
 				var marker = this;
-				var icon = (marker && marker.icon && marker.icon.url) ? new $scope.LeafIcon({ iconUrl: marker.icon.url }) : new $scope.defaultIcon({ iconUrl: '../images/marker-icon.png' });
+				var icon = (marker && marker.icon && marker.icon.url) ? new $scope.LeafIcon({ iconUrl: marker.icon.url }) : new $scope.LeafIcon({ iconUrl: $scope.iconMap.get('Misc').url });
 				var mapMarker = L.marker([marker.latitude, marker.longitude], { icon: icon });
 				mapMarker.addTo(map);
 				mapMarker.entity = entity;
 				mapMarker.marker = marker;
 				mapMarker.bindPopup(entity.title);
-				$(mapMarker).hover(function() { this.openPopup(); } , function(){this.closePopup();} );
+				$(mapMarker).hover(function() { this.openPopup(); } , function(){ this.closePopup(); } );
 				map.addMapLayer(mapMarker);
 			} catch (err) {
 				console.log("Error adding marker: " + err);
@@ -129,94 +136,103 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 	}).addTo(map);
 
 	var entityInterval = setInterval(function() {
-		if ($scope.entities && $scope.entities.length > 0) {
+		if ($scope.entitiesLoaded && $scope.typesLoaded && $scope.iconsLoaded) {
 			$($scope.entities).each(addEntity);
 			clearInterval(entityInterval);
+			$scope.entitiesAddedToMap = true;
 		}
-	}, 500)
+	}, 500);
 
 	/* Draw Controls */
-	var drawnItems = new L.FeatureGroup().addTo(map);
-	var drawControl = new L.Control.Draw({
-		draw: {
-			polyline: false,
-			rectangle: false,
-			marker: {
-				icon: new $scope.defaultIcon({ iconUrl: '../images/marker-icon.png' })
-			}
+	var drawInterval = setInterval(function() {
+		if ($scope.entitiesLoaded && $scope.typesLoaded && $scope.iconsLoaded) {
+			var drawnItems = new L.FeatureGroup().addTo(map);
+			var drawControl = new L.Control.Draw({
+				draw: {
+					polyline: false,
+					rectangle: false,
+					marker: {
+						icon: new $scope.LeafIcon({ iconUrl: $scope.iconMap.get('Misc').url })
+					}
+				}
+//			    edit: {
+//			        featureGroup: drawnItems
+//			    }
+			}).addTo(map);
+			map.on('draw:created', function (e) {
+				sidebar.close('info');
+			    var type = e.layerType;
+			    var layer = e.layer;
+
+			    $scope.activeEntity = new EntityService();
+			    $scope.activeEntity.title = '';
+			    $scope.activeEntity.types = [];
+			    $scope.activeEntity.circles = [];
+			    $scope.activeEntity.markers = [];
+			    $scope.activeEntity.polygons = [];
+			    $scope.activeEntity.notes = [];
+			    $scope.activeEntity.images = [];
+			    $scope.activeEntity.addNote = function() {
+			    	$scope.activeEntity.notes.push({});
+			    }
+			    $scope.activeEntity.removeNote = function(index) {
+		    		$scope.activeEntity.notes.splice(index, 1);
+			    }
+			    $scope.activeEntity.addImage = function() {
+			    	$scope.activeEntity.images.push({});
+			    }
+			    $scope.activeEntity.removeImage = function(index) {
+			    	$scope.activeEntity.images.splice(index, 1);
+			    }
+			    
+			    $scope.saveEntity = function(entityToSave) {
+			    	entityToSave.$save({'ajaxId':'saveEntity'}, function(savedEntity) {
+				    	addEntity(0, savedEntity);
+				    	$scope.closeModal();
+				    });
+			    }
+			    
+			    $scope.closeModal = function() {
+			    	$scope.saveEntity = null;
+			    	$scope.closeModal = null;
+			    }
+
+			    if (type === 'marker') {
+			        var marker = {};
+			        marker.latitude = layer._latlng.lat;
+			        marker.longitude = layer._latlng.lng;
+			        $scope.activeEntity.markers.push(marker);
+			        $('#markerModal').modal('show');
+			        $('.pick-a-color').pickAColor();
+			    } else if (type === 'circle') {
+			    	var circle = {};
+			    	circle.latitude = layer._latlng.lat;
+			    	circle.longitude = layer._latlng.lng;
+			    	circle.radius = layer._mRadius;
+			    	circle.outlineColor = layer.options.color;
+			    	circle.fillColor = layer.options.color;
+			    	$scope.activeEntity.circles.push(circle);
+			    	$('#circleModal').modal('show');
+			    	$('.pick-a-color').pickAColor();
+			    } else if (type === 'polygon') {
+			    	var polygon = {};
+			    	polygon.vertices = '';
+			    	$(layer._latlngs).each(function() {
+			    		polygon.vertices += (polygon.vertices) ? ',' : '[';
+			    		polygon.vertices += '[' + this.lat + ',' + this.lng + ']';
+			    	});
+			    	polygon.vertices += ']';
+			    	polygon.outlineColor = layer.options.color;
+			    	polygon.fillColor = layer.options.color;
+			    	$scope.activeEntity.polygons.push(polygon);
+			    	$('#polygonModal').modal('show');
+			    	$('.pick-a-color').pickAColor();
+			    }
+			    $scope.$apply();
+			});
+			clearInterval(drawInterval);
 		}
-//	    edit: {
-//	        featureGroup: drawnItems
-//	    }
-	}).addTo(map);
-	map.on('draw:created', function (e) {
-		sidebar.close('info');
-	    var type = e.layerType;
-	    var layer = e.layer;
-
-	    $scope.activeEntity = new EntityService();
-	    $scope.activeEntity.title = '';
-	    $scope.activeEntity.types = [];
-	    $scope.activeEntity.circles = [];
-	    $scope.activeEntity.markers = [];
-	    $scope.activeEntity.polygons = [];
-	    $scope.activeEntity.notes = [];
-	    $scope.activeEntity.images = [];
-	    $scope.activeEntity.addNote = function() {
-	    	$scope.activeEntity.notes.push({});
-	    }
-	    $scope.activeEntity.removeNote = function(index) {
-    		$scope.activeEntity.notes.splice(index, 1);
-	    }
-	    $scope.activeEntity.addImage = function() {
-	    	$scope.activeEntity.images.push({});
-	    }
-	    $scope.activeEntity.removeImage = function(index) {
-	    	$scope.activeEntity.images.splice(index, 1);
-	    }
-	    
-	    $scope.saveEntity = function(entityToSave) {
-	    	entityToSave.$save({'ajaxId':'saveEntity'}, function(savedEntity) {
-		    	addEntity(0, savedEntity);
-		    	$scope.closeModal();
-		    });
-	    }
-	    
-	    $scope.closeModal = function() {
-	    	$scope.saveEntity = null;
-	    	$scope.closeModal = null;
-	    }
-
-	    if (type === 'marker') {
-	        var marker = {};
-	        marker.latitude = layer._latlng.lat;
-	        marker.longitude = layer._latlng.lng;
-	        $scope.activeEntity.markers.push(marker);
-	        $('#markerModal').modal('show');
-	    } else if (type === 'circle') {
-	    	var circle = {};
-	    	circle.latitude = layer._latlng.lat;
-	    	circle.longitude = layer._latlng.lng;
-	    	circle.radius = layer._mRadius;
-	    	circle.outlineColor = layer.options.color;
-	    	circle.fillColor = layer.options.color;
-	    	$scope.activeEntity.circles.push(circle);
-	    	$('#circleModal').modal('show');
-	    } else if (type === 'polygon') {
-	    	var polygon = {};
-	    	polygon.vertices = '';
-	    	$(layer._latlngs).each(function() {
-	    		polygon.vertices += (polygon.vertices) ? ',' : '[';
-	    		polygon.vertices += '[' + this.lat + ',' + this.lng + ']';
-	    	});
-	    	polygon.vertices += ']';
-	    	polygon.outlineColor = layer.options.color;
-	    	polygon.fillColor = layer.options.color;
-	    	$scope.activeEntity.polygons.push(polygon);
-	    	$('#polygonModal').modal('show');
-	    }
-	    $scope.$apply();
-	});
+	}, 500);
 });
 
 controllerApp.controller('SidebarController', function($scope) {
@@ -269,49 +285,55 @@ controllerApp.controller('SidebarController', function($scope) {
 	});
 	
 	/* Search: Create a search entry for each map layer */
-	$(map.mapLayers).each(function() {
-		var entity = this.entity;
-		var openSidebarInfo = function(coordinates) {
-			$('#info-coordinates').addClass('hidden');
-		    $('#info-node').addClass('hidden');
+	var entitiesOnClickInterval = setInterval(function() {
+		if ($scope.entitiesAddedToMap) {
+			$(map.mapLayers).each(function() {
+				var entity = this.entity;
+				var openSidebarInfo = function(coordinates) {
+					$('#info-coordinates').addClass('hidden');
+				    $('#info-node').addClass('hidden');
 
-		    $('#info .sidebar-header').children().first().text(entity.title);
-		    $('#info-node .node-notes').text('');
-			if (entity.notes) {
-				$(entity.notes).each(function() {
-		    		$('#info-node .node-notes').append('<p>' + this.note + '</p>');
-		    	});
-		    }
-			$('#info-node .node-img').text('');
-			if (entity.images) {
-				$(entity.images).each(function() {
-		    		$('#info-node .node-img').append('<a href="' + this.url + '"><img src="' + this.url + '" width="300px"></img></a><br />');
-		    	});
-		    }
-			$('info-node .node-coordinates').text(coordinates);
-			
-			$('#info-node').removeClass('hidden');
-		    sidebar.open('info');
-		}
+				    $('#info .sidebar-header').children().first().text(entity.title);
+				    $('#info-node .node-notes').text('');
+					if (entity.notes) {
+						$(entity.notes).each(function() {
+				    		$('#info-node .node-notes').append('<p>' + this.note + '</p>');
+				    	});
+				    }
+					$('#info-node .node-img').text('');
+					if (entity.images) {
+						$(entity.images).each(function() {
+				    		$('#info-node .node-img').append('<a href="' + this.url + '"><img src="' + this.url + '" width="300px"></img></a><br />');
+				    	});
+				    }
+					$('info-node .node-coordinates').text(coordinates);
+					
+					$('#info-node').removeClass('hidden');
+				    sidebar.open('info');
+				}
 
-		if (entity.markers && entity.markers[0]) {
-			$(this).click(function(e) {
-			    openSidebarInfo('[' + entity.markers[0].latitude + ', ' + entity.markers[0].longitude + ']');
-			});
-		}
-		
-		if (entity.circles && entity.circles[0]) {
-			$(this).click(function(e) {
-				openSidebarInfo('[' + entity.circles[0].latitude + ', ' + entity.circles[0].longitude + ']');
-			});
-		}
+				if (entity.markers && entity.markers[0]) {
+					$(this).click(function(e) {
+					    openSidebarInfo('[' + entity.markers[0].latitude + ', ' + entity.markers[0].longitude + ']');
+					});
+				}
+				
+				if (entity.circles && entity.circles[0]) {
+					$(this).click(function(e) {
+						openSidebarInfo('[' + entity.circles[0].latitude + ', ' + entity.circles[0].longitude + ']');
+					});
+				}
 
-		if (entity.polygons && entity.polygons[0]) {
-			$(this).click(function(e) {
-				openSidebarInfo(entity.polygons[0].vertices);
+				if (entity.polygons && entity.polygons[0]) {
+					$(this).click(function(e) {
+						openSidebarInfo(entity.polygons[0].vertices);
+					});
+				}
 			});
+			clearInterval(entitiesOnClickInterval);
+			$scope.entitiesOnClickLoaded = true;
 		}
-	});
+	}, 500);
 	
 	/* For toggling search items to show or not when clicked */
 	$scope.toggle = function(id) {
@@ -339,14 +361,18 @@ controllerApp.controller('SidebarController', function($scope) {
 		});
 	});
 
-	setTimeout(function() {
-		observer.observe(document.getElementById("search-list"), {
-			childList: true,
-			attributes: false,
-			characterData: false,
-			subtree: false,
-			attributeOldValue: false,
-			characterDataOldValue: false
-		});
-	}, 2000);
+	var observerInterval = setTimeout(function() {
+		if ($scope.entitiesAddedToMap) {
+			observer.observe(document.getElementById("search-list"), {
+				childList: true,
+				attributes: false,
+				characterData: false,
+				subtree: false,
+				attributeOldValue: false,
+				characterDataOldValue: false
+			});
+			clearInterval(observerInterval);
+			$scope.entityObserverAdded = true;
+		}
+	}, 500);
 });
