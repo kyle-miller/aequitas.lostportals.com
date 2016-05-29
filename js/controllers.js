@@ -128,7 +128,12 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 		noWarp: true
 	}).addTo(map);
 
-	$($scope.entities).each(addEntity);
+	var entityInterval = setInterval(function() {
+		if ($scope.entities && $scope.entities.length > 0) {
+			$($scope.entities).each(addEntity);
+			clearInterval(entityInterval);
+		}
+	}, 500)
 
 	/* Draw Controls */
 	var drawnItems = new L.FeatureGroup().addTo(map);
@@ -173,8 +178,8 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 	    $scope.saveEntity = function(entityToSave) {
 	    	entityToSave.$save({'ajaxId':'saveEntity'}, function(savedEntity) {
 		    	addEntity(0, savedEntity);
+		    	$scope.closeModal();
 		    });
-		    $scope.closeModal();
 	    }
 	    
 	    $scope.closeModal = function() {
@@ -343,5 +348,5 @@ controllerApp.controller('SidebarController', function($scope) {
 			attributeOldValue: false,
 			characterDataOldValue: false
 		});
-	}, 1000);
+	}, 2000);
 });
