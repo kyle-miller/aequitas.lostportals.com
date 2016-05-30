@@ -40,6 +40,7 @@ controllerApp.controller('AppController', function($scope, EntityService, TypeSe
 });
 
 controllerApp.controller('MapController', function($scope, EntityService) {
+	$scope.childScope = {};
 	$scope.LeafIcon = L.Icon.extend({
 		options: {
 			iconSize: [47, 37],
@@ -64,12 +65,8 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 	map.mapLayers = [];
 	map.mapLayersMap = new Map();
 	
-	map.addMapLayer = function(layer) {
-		map.mapLayers.push(layer);
-		map.mapLayersMap.set(layer.entity.id, layer);
-	}
-	
-	var addEntity = function(index, entity) {
+	$scope.addEntity = function(index, entity) {
+		var layers = [];
 		$(entity.markers).each(function() {
 			try {
 				var marker = this;
@@ -80,7 +77,9 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 				mapMarker.marker = marker;
 				mapMarker.bindPopup(entity.title);
 				$(mapMarker).hover(function() { this.openPopup(); } , function(){ this.closePopup(); } );
-				map.addMapLayer(mapMarker);
+				map.mapLayers.push(mapMarker);
+				map.mapLayersMap.set(entity.id, mapMarker);
+				layers.push(mapMarker);
 			} catch (err) {
 				console.log("Error adding marker: " + err);
 				console.log(entity);
@@ -99,7 +98,9 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 				mapCircle.circle = circle;
 				mapCircle.bindPopup(entity.title);
 				$(mapCircle).hover(function() { this.openPopup(); } , function(){this.closePopup();} );
-				map.addMapLayer(mapCircle);
+				map.mapLayers.push(mapCircle);
+				map.mapLayersMap.set(entity.id, mapCircle);
+				layers.push(mapCircle);
 			} catch (err) {
 				console.log("Error adding circle: " + err);
 				console.log(entity);
@@ -118,12 +119,15 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 				mapPolygon.polygon = polygon;
 				mapPolygon.bindPopup(entity.title);
 				$(mapPolygon).hover(function() { this.openPopup(polygonPopupLocation(this._latlngs)); } , function(){ this.closePopup(); } );
-				map.addMapLayer(mapPolygon);
+				map.mapLayers.push(mapPolygon);
+				map.mapLayersMap.set(entity.id, mapPolygon);
+				layers.push(mapPolygon);
 			} catch (err) {
 				console.log("Error adding polygon: " + err);
 				console.log(entity);
 			}
 		});
+		return layers;
 	};
 
 	L.tileLayer('http://aequitas.lostportals.com/map/{z}/{x}/{y}.png', {
@@ -137,7 +141,7 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 
 	var entityInterval = setInterval(function() {
 		if ($scope.entitiesLoaded && $scope.typesLoaded && $scope.iconsLoaded) {
-			$($scope.entities).each(addEntity);
+			$($scope.entities).each($scope.addEntity);
 			clearInterval(entityInterval);
 			$scope.entitiesAddedToMap = true;
 		}
@@ -187,7 +191,10 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 			    
 			    $scope.saveEntity = function(entityToSave) {
 			    	entityToSave.$save({'ajaxId':'saveEntity'}, function(savedEntity) {
-				    	addEntity(0, savedEntity);
+				    	var newLayers = $scope.addEntity(0, savedEntity);
+				    	newLayers.forEach(function(newLayer) {
+				    		$scope.childScope.layerOnClick(0, newLayer);
+				    	});
 				    	$scope.closeModal();
 				    });
 			    }
@@ -235,15 +242,24 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 	}, 500);
 });
 
-controllerApp.controller('SidebarController', function($scope) {
+controllerApp.controller('SidebarController', function($scope, EntityService) {
 	sidebar = L.control.sidebar('sidebar', {
 		position: 'right'
 	}).addTo(map);
+	
+	var clearSidebarInfo = function() {
+		$('#info .sidebar-header').children().first().text('');
+    	$('#info-node .node-notes').text('');
+    	$('#info-node .node-img').text('');
+    	$('info-node .node-coordinates').text('');
+    	$('#info-coordinates').addClass('hidden');
+	    $('#info-node').addClass('hidden');
+    	$('#info .node-crud').addClass('hidden');
+	}
 
 	/* Hide other sidebar items and show the clicked coordinates */
 	map.on('click', function(e) {
-	    $('#info-coordinates').addClass('hidden');
-	    $('#info-node').addClass('hidden');
+	    clearSidebarInfo();
 	    $('#info .sidebar-header').children().first().text('Coordinates [Lat, Long]');
 	    $('#info-coordinates .coord-data').html('[' + e.latlng.lat + ', ' + e.latlng.lng + ']');
 	    $('#info-coordinates').removeClass('hidden');
@@ -284,53 +300,65 @@ controllerApp.controller('SidebarController', function($scope) {
 	    $("#layer-content").append($sidebarDiv);
 	});
 	
-	/* Search: Create a search entry for each map layer */
-	var entitiesOnClickInterval = setInterval(function() {
-		if ($scope.entitiesAddedToMap) {
-			$(map.mapLayers).each(function() {
-				var entity = this.entity;
-				var openSidebarInfo = function(coordinates) {
-					$('#info-coordinates').addClass('hidden');
-				    $('#info-node').addClass('hidden');
+	$scope.layerOnClick = function(index, layer) {
+		var entity = layer.entity;
+		var openSidebarInfo = function(coordinates) {
+			clearSidebarInfo();
 
-				    $('#info .sidebar-header').children().first().text(entity.title);
-				    $('#info-node .node-notes').text('');
-					if (entity.notes) {
-						$(entity.notes).each(function() {
-				    		$('#info-node .node-notes').append('<p>' + this.note + '</p>');
-				    	});
-				    }
-					$('#info-node .node-img').text('');
-					if (entity.images) {
-						$(entity.images).each(function() {
-				    		$('#info-node .node-img').append('<a href="' + this.url + '"><img src="' + this.url + '" width="300px"></img></a><br />');
-				    	});
-				    }
-					$('info-node .node-coordinates').text(coordinates);
-					
-					$('#info-node').removeClass('hidden');
-				    sidebar.open('info');
-				}
+		    $('#info .sidebar-header').children().first().text(entity.title);
+		    $('#info-node .node-notes').text('');
+			if (entity.notes) {
+				$(entity.notes).each(function() {
+		    		$('#info-node .node-notes').append('<p>' + this.note + '</p>');
+		    	});
+		    }
+			$('#info-node .node-img').text('');
+			if (entity.images) {
+				$(entity.images).each(function() {
+		    		$('#info-node .node-img').append('<a href="' + this.url + '"><img src="' + this.url + '" width="300px"></img></a><br />');
+		    	});
+		    }
+			$('info-node .node-coordinates').text(coordinates);
 
-				if (entity.markers && entity.markers[0]) {
-					$(this).click(function(e) {
-					    openSidebarInfo('[' + entity.markers[0].latitude + ', ' + entity.markers[0].longitude + ']');
-					});
-				}
-				
-				if (entity.circles && entity.circles[0]) {
-					$(this).click(function(e) {
-						openSidebarInfo('[' + entity.circles[0].latitude + ', ' + entity.circles[0].longitude + ']');
-					});
-				}
-
-				if (entity.polygons && entity.polygons[0]) {
-					$(this).click(function(e) {
-						openSidebarInfo(entity.polygons[0].vertices);
-					});
-				}
+			$('#info .node-crud').removeClass('hidden');
+			$('#info .node-crud').click(function(e) {
+				new EntityService().$delete({'ajaxId':'deleteEntity', 'id':entity.id}, function(data) {
+			    	map.mapLayers.splice(map.mapLayers.indexOf(layer), 1);
+			    	map.mapLayersMap.delete(entity.id);
+			    	map.removeLayer(layer);
+			    	clearSidebarInfo();
+			    	sidebar.close('info');
+			    });
 			});
-			clearInterval(entitiesOnClickInterval);
+			
+			$('#info-node').removeClass('hidden');
+		    sidebar.open('info');
+		}
+
+		if (entity.markers && entity.markers[0]) {
+			$(layer).click(function(e) {
+			    openSidebarInfo('[' + entity.markers[0].latitude + ', ' + entity.markers[0].longitude + ']');
+			});
+		}
+		
+		if (entity.circles && entity.circles[0]) {
+			$(layer).click(function(e) {
+				openSidebarInfo('[' + entity.circles[0].latitude + ', ' + entity.circles[0].longitude + ']');
+			});
+		}
+
+		if (entity.polygons && entity.polygons[0]) {
+			$(layer).click(function(e) {
+				openSidebarInfo(entity.polygons[0].vertices);
+			});
+		}
+	};
+	$scope.$parent.childScope.layerOnClick = $scope.layerOnClick;
+	
+	var layersOnClickInterval = setInterval(function() {
+		if ($scope.entitiesAddedToMap) {
+			$(map.mapLayers).each($scope.layerOnClick);
+			clearInterval(layersOnClickInterval);
 			$scope.entitiesOnClickLoaded = true;
 		}
 	}, 500);

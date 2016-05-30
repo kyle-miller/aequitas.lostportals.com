@@ -152,3 +152,8 @@ body,
 .map-modal .modal-body table span i {
 	cursor: pointer;
 }
+
+.sidebar-header .node-crud {
+	margin-left: 1em;
+	cursor: pointer;
+}
