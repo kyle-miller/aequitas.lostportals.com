@@ -240,6 +240,11 @@ controllerApp.controller('MapController', function($scope, EntityService) {
 			clearInterval(drawInterval);
 		}
 	}, 500);
+	
+	$scope.confirm = function(e) {
+		$scope.confirmExecute();
+		$scope.confirmExecute = null;
+	};
 });
 
 controllerApp.controller('SidebarController', function($scope, EntityService) {
@@ -322,13 +327,16 @@ controllerApp.controller('SidebarController', function($scope, EntityService) {
 
 			$('#info .node-crud').removeClass('hidden');
 			$('#info .node-crud').click(function(e) {
-				new EntityService().$delete({'ajaxId':'deleteEntity', 'id':entity.id}, function(data) {
-			    	map.mapLayers.splice(map.mapLayers.indexOf(layer), 1);
-			    	map.mapLayersMap.delete(entity.id);
-			    	map.removeLayer(layer);
-			    	clearSidebarInfo();
-			    	sidebar.close('info');
-			    });
+				$scope.$parent.confirmExecute = function() {
+					new EntityService().$delete({'ajaxId':'deleteEntity', 'id':entity.id}, function(data) {
+				    	map.mapLayers.splice(map.mapLayers.indexOf(layer), 1);
+				    	map.mapLayersMap.delete(entity.id);
+				    	map.removeLayer(layer);
+				    	clearSidebarInfo();
+				    	sidebar.close('info');
+				    });
+				};
+				$('#confirmationModal').modal('show');
 			});
 			
 			$('#info-node').removeClass('hidden');
